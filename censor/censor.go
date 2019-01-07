@@ -81,13 +81,13 @@ type JobDetailResponse struct {
 
 const AliSite = "http://mts.cn-hangzhou.aliyuncs.com"
 
-func CensorRequest(values url.Values) (*ActionResponse, error) {
+func CensorRequest(values url.Values) (*JobResponse, error) {
 	resp, err := http.Get(URL(values))
 	if err != nil {
 		return nil, err
 	}
 
-	r := ActionResponse{}
+	r := JobResponse{}
 	err = util.UnmarshalJSON(resp.Body, &r)
 	return &r, err
 
