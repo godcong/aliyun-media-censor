@@ -76,3 +76,11 @@ func UnmarshalJSON(reader io.Reader, v interface{}) error {
 	}
 	return nil
 }
+
+func MarshalJSON(v interface{}) ([]byte, error) {
+	bytes, err := jsoniter.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+	return bytes, err
+}

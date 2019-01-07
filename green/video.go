@@ -61,22 +61,22 @@ type ClientInfo struct {
 }
 
 type VideoRequest struct {
-	BizType     string   `json:"bizType"`
+	BizType     string   `json:"bizType,omitempty"`
 	Scenes      []string `json:"scenes"`
-	AudioScenes []string `json:"audioScenes"`
-	Callback    string   `json:"callback"`
-	Seed        string   `json:"seed"`
+	AudioScenes []string `json:"audioScenes,omitempty"`
+	Callback    string   `json:"callback,omitempty"`
+	Seed        string   `json:"seed,omitempty"`
 	Tasks       []struct {
-		ClientInfo []ClientInfo `json:"clientInfo"`
-		DataID     string       `json:"dataId"`
-		URL        string       `json:"url"`
+		ClientInfo []ClientInfo `json:"clientInfo,omitempty"`
+		DataID     string       `json:"dataId,omitempty"`
+		URL        string       `json:"url,omitempty"`
 		Frames     []struct {
-			URL    string `json:"url"`
-			Offset int    `json:"offset"`
-		} `json:"frames"`
-		FramePrefix string `json:"framePrefix"`
-		Interval    int    `json:"interval"`
-		MaxFrames   int    `json:"maxFrames"`
+			URL    string `json:"url,omitempty"`
+			Offset int    `json:"offset,omitempty"`
+		} `json:"frames,omitempty"`
+		FramePrefix string `json:"framePrefix,omitempty"`
+		Interval    int    `json:"interval,omitempty"`
+		MaxFrames   int    `json:"maxFrames,omitempty"`
 	} `json:"tasks"`
 }
 
@@ -94,7 +94,11 @@ func Link(url string) string {
 	return AliSite + "/" + url
 }
 
-func GreenVideoSyncscan() {
+func GreenVideoSyncscan(request *VideoRequest) (*ResultData, error) {
 	url := Link("green/video/syncscan")
 
+}
+
+func GreenVideoAsyncscan(request *VideoRequest) (*ResultData, error) {
+	url := Link("green/video/asyncscan")
 }
