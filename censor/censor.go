@@ -1,8 +1,7 @@
 package censor
 
 import (
-	"github.com/json-iterator/go"
-	"io/ioutil"
+	"github.com/godcong/aliyun-media-censor/util"
 	"net/http"
 	"net/url"
 )
@@ -15,20 +14,17 @@ type ActionResponse struct {
 const AliSite = "http://mts.cn-hangzhou.aliyuncs.com"
 
 func CensorRequest(values url.Values) (*ActionResponse, error) {
-	link := AliSite + "?" + values.Encode()
-	resp, err := http.Get(link)
+	resp, err := http.Get(URL(values))
 	if err != nil {
 		return nil, err
 	}
-	bytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	r := ActionResponse{}
-	err = jsoniter.Unmarshal(bytes, &r)
-	if err != nil {
-		return nil, err
-	}
-	return &r, nil
 
+	r := ActionResponse{}
+	err = util.UnmarshalJSON(resp.Body, &r)
+	return &r, err
+
+}
+
+func URL(values url.Values) string {
+	return AliSite + "?" + values.Encode()
 }
