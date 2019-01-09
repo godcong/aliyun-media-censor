@@ -1,9 +1,17 @@
 package green
 
 import (
+	"bytes"
+	"github.com/godcong/aliyun-media-censor/util"
+	"github.com/json-iterator/go"
+	"io"
+	"log"
+	"net/http"
 	"net/url"
 	"strings"
 )
+
+const ContentTypeJSON = "application/json"
 
 type ResultData struct {
 	Code int `json:"code"`
@@ -96,9 +104,39 @@ func Link(url string) string {
 
 func GreenVideoSyncscan(request *VideoRequest) (*ResultData, error) {
 	url := Link("green/video/syncscan")
+	resp, err := http.Post(url, ContentTypeJSON, request.Reader())
+	if err != nil {
+		return nil, err
+	}
+	var data ResultData
+	err = util.UnmarshalJSON(resp.Body, &data)
+	if err != nil {
+		return nil, err
+	}
+	return &data, nil
 
 }
 
 func GreenVideoAsyncscan(request *VideoRequest) (*ResultData, error) {
 	url := Link("green/video/asyncscan")
+	resp, err := http.Post(url, ContentTypeJSON, request.Reader())
+	if err != nil {
+		return nil, err
+	}
+	var data ResultData
+	err = util.UnmarshalJSON(resp.Body, &data)
+	if err != nil {
+		return nil, err
+	}
+	return &data, nil
+}
+
+func (r *VideoRequest) Reader() io.Reader {
+	b, err := jsoniter.Marshal(r)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	return bytes.NewBuffer(b)
+
 }
