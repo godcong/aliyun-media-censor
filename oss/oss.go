@@ -4,11 +4,31 @@ import (
 	"fmt"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"path/filepath"
+	"sync"
 )
 
 type OSS struct {
 	Config Config
 	Bucket *oss.Bucket
+}
+
+var ossServer1 *OSS
+
+func init() {
+	var err error
+	once := sync.Once{}
+	once.Do(func() {
+		ossServer1, err = NewOSS(Config{
+			Endpoint:        "",
+			AccessKeyID:     "",
+			AccessKeySecret: "",
+			BucketName:      "",
+			downloadInfo:    NewDownloadInfo(),
+		})
+		if err != nil {
+			panic(err)
+		}
+	})
 }
 
 func newOSS(config Config, bucket *oss.Bucket) *OSS {
@@ -48,25 +68,39 @@ func NewDownloadInfo() *DownloadInfo {
 		PartSize:   100 * 1024 * 1024,
 		Routines:   oss.Routines(5),
 		Checkpoint: oss.Checkpoint(true, "./cp"),
-		Progress:   nil,
+		Progress:   oss.Progress(&progress{}),
 	}
 }
 
-//type ProgressListenFunc func(event *oss.ProgressEvent)
-
-func (i *DownloadInfo) RegisterListener(lis ProgressListener) {
+func (i *DownloadInfo) RegisterListener(lis Progress) {
 	i.Progress = oss.Progress(lis)
 }
 
-type ProgressListener interface {
+type Progress interface {
 	ProgressChanged(event *oss.ProgressEvent)
+	SetObjectKey(objectKey string)
+	ObjectKey() string
+	Option() oss.Option
 }
 
 type progress struct {
+	objectKey string
+}
+
+func (p *progress) Option() oss.Option {
+	return oss.Progress(p)
+}
+
+func (p *progress) ObjectKey() string {
+	return p.objectKey
+}
+
+func (p *progress) SetObjectKey(objectKey string) {
+	p.objectKey = objectKey
 }
 
 // 定义进度变更事件处理函数。
-func (listener *progress) ProgressChanged(event *oss.ProgressEvent) {
+func (p *progress) ProgressChanged(event *oss.ProgressEvent) {
 	switch event.EventType {
 	case oss.TransferStartedEvent:
 		fmt.Printf("Transfer Started, ConsumedBytes: %d, TotalBytes %d.\n",
@@ -77,6 +111,7 @@ func (listener *progress) ProgressChanged(event *oss.ProgressEvent) {
 	case oss.TransferCompletedEvent:
 		fmt.Printf("\nTransfer Completed, ConsumedBytes: %d, TotalBytes %d.\n",
 			event.ConsumedBytes, event.TotalBytes)
+
 	case oss.TransferFailedEvent:
 		fmt.Printf("\nTransfer Failed, ConsumedBytes: %d, TotalBytes %d.\n",
 			event.ConsumedBytes, event.TotalBytes)
@@ -97,10 +132,10 @@ func NewOSS(config Config) (*OSS, error) {
 	return newOSS(config, bucket), nil
 }
 
-func (o *OSS) Download(objectKey string) error {
+func (o *OSS) Download(p Progress) error {
 	di := o.Config.DownloadInfo()
-	fp := filepath.Join(di.DirPath, objectKey)
-	err := o.Bucket.DownloadFile(objectKey, fp, di.PartSize, di.Routines, di.Progress, di.Checkpoint)
+	fp := filepath.Join(di.DirPath, p.ObjectKey())
+	err := o.Bucket.DownloadFile(p.ObjectKey(), fp, di.PartSize, di.Routines, p.Option(), di.Checkpoint)
 	if err != nil {
 		return err
 	}
