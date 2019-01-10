@@ -1,4 +1,4 @@
-package util
+package green
 
 import (
 	"bytes"
@@ -36,10 +36,10 @@ func addRequestHeader(requestBody string, req *http.Request, clientInfo string, 
 	req.Header.Set(acsHeaderKeyArray[1], acsHeaderValueArray[1])
 	req.Header.Set(acsHeaderKeyArray[2], acsHeaderValueArray[2])
 	req.Header.Set(acsHeaderKeyArray[3], acsHeaderValueArray[3])
-	req.Header.Set("Authorization", "acs"+" "+accessKeyId+":"+singature(acsHeaderKeyArray, acsHeaderValueArray, base64Md5Str, clientInfo, path, accessKeySecret, gmtDate))
+	req.Header.Set("Authorization", "acs"+" "+accessKeyId+":"+signature(acsHeaderKeyArray, acsHeaderValueArray, base64Md5Str, clientInfo, path, accessKeySecret, gmtDate))
 }
 
-func singature(acsHeaderKeyArray []string, acsHeaderValueArray []string, md5Str string, clientInfo string, path string, accessKeySecret string, gmtDate string) string {
+func signature(acsHeaderKeyArray []string, acsHeaderValueArray []string, md5Str string, clientInfo string, path string, accessKeySecret string, gmtDate string) string {
 	b := bytes.Buffer{}
 
 	b.WriteString(method)

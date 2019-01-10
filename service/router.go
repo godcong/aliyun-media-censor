@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/godcong/aliyun-media-censor/green"
 	"github.com/godcong/aliyun-media-censor/oss"
+	"github.com/satori/go.uuid"
 	"log"
 	"net/http"
 )
@@ -47,12 +48,13 @@ func Router(eng *gin.Engine) {
 		p.SetObjectKey("5F6688B5.mp4")
 
 		u, err := server.URL(p)
-		data, err := green.GreenVideoAsyncscan(&green.VideoRequest{
+
+		data, err := green.VideoAsyncScan(&green.BizData{
 			Scenes:      []string{"porn", "terrorism", "ad", "live", "sface"},
 			AudioScenes: []string{"antispam"},
 			Tasks: []green.Task{
 				{
-					DataID:    "dataid 00001",
+					DataID:    uuid.NewV1().String(),
 					URL:       u,
 					Interval:  1,
 					MaxFrames: 200,
@@ -65,7 +67,8 @@ func Router(eng *gin.Engine) {
 	})
 
 	g0.GET("status/:id", func(ctx *gin.Context) {
-
+		data, err := green.VideoResults(ctx.Param("id"))
+		log.Println(data, err)
 	})
 
 }
