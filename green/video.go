@@ -9,9 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 const ContentTypeJSON = "application/json"
+const GMTTimeFormmat = "Mon, 02 Jan 2006 15:04:05 -0700 GMT"
 
 type ResultData struct {
 	Code int `json:"code"`
@@ -68,27 +70,31 @@ type ClientInfo struct {
 	HostVersion string `json:"hostVersion"` //否	宿主应用版本。
 }
 
+type Frame struct {
+	URL    string `json:"url,omitempty"`
+	Offset int    `json:"offset,omitempty"`
+}
+
+type Task struct {
+	ClientInfo  []ClientInfo `json:"clientInfo,omitempty"`
+	DataID      string       `json:"dataId,omitempty"`
+	URL         string       `json:"url,omitempty"`
+	Frames      []Frame      `json:"frames,omitempty"`
+	FramePrefix string       `json:"framePrefix,omitempty"`
+	Interval    int          `json:"interval,omitempty"`
+	MaxFrames   int          `json:"maxFrames,omitempty"`
+}
+
 type VideoRequest struct {
 	BizType     string   `json:"bizType,omitempty"`
 	Scenes      []string `json:"scenes"`
 	AudioScenes []string `json:"audioScenes,omitempty"`
 	Callback    string   `json:"callback,omitempty"`
 	Seed        string   `json:"seed,omitempty"`
-	Tasks       []struct {
-		ClientInfo []ClientInfo `json:"clientInfo,omitempty"`
-		DataID     string       `json:"dataId,omitempty"`
-		URL        string       `json:"url,omitempty"`
-		Frames     []struct {
-			URL    string `json:"url,omitempty"`
-			Offset int    `json:"offset,omitempty"`
-		} `json:"frames,omitempty"`
-		FramePrefix string `json:"framePrefix,omitempty"`
-		Interval    int    `json:"interval,omitempty"`
-		MaxFrames   int    `json:"maxFrames,omitempty"`
-	} `json:"tasks"`
+	Tasks       []Task   `json:"tasks"`
 }
 
-const AliSite = "http://green.cn-shanghai.aliyuncs.com"
+const AliSite = "https://green.cn-shanghai.aliyuncs.com"
 
 func URL(values url.Values) string {
 	return AliSite + "?" + values.Encode()
@@ -102,8 +108,22 @@ func Link(url string) string {
 	return AliSite + "/" + url
 }
 
+func Header() *http.Header {
+	h := http.Header{}
+	h.Set("Accept", "application/json")
+	h.Set("Content-Type", "application/json")
+	h.Set("Date", time.Now().Format(GMTTimeFormmat))
+	h.Set("x-acs-version", "2018-05-09")
+	h.Set("x-acs-signature-nonce", util.GenerateRandomString(32))
+	h.Set("x-acs-signature-version", "1.0")
+	h.Set("x-acs-signature-method", "HMAC-SHA1")
+	h.Set("Authorization", "...")
+	return &h
+}
+
 func GreenVideoSyncscan(request *VideoRequest) (*ResultData, error) {
 	url := Link("green/video/syncscan")
+	log.Println("url:", url)
 	resp, err := http.Post(url, ContentTypeJSON, request.Reader())
 	if err != nil {
 		return nil, err
@@ -119,7 +139,28 @@ func GreenVideoSyncscan(request *VideoRequest) (*ResultData, error) {
 
 func GreenVideoAsyncscan(request *VideoRequest) (*ResultData, error) {
 	url := Link("green/video/asyncscan")
+	log.Println("url:", url)
 	resp, err := http.Post(url, ContentTypeJSON, request.Reader())
+	if err != nil {
+		return nil, err
+	}
+	var data ResultData
+	err = util.UnmarshalJSON(resp.Body, &data)
+	if err != nil {
+		return nil, err
+	}
+	return &data, nil
+}
+
+func GreenVideoResults(request ...string) (*ResultData, error) {
+	url := Link("green/video/results")
+	log.Println("url:", url)
+	marshaled, err := jsoniter.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
+	reader := bytes.NewReader(marshaled)
+	resp, err := http.Post(url, ContentTypeJSON, reader)
 	if err != nil {
 		return nil, err
 	}

@@ -7,40 +7,53 @@ import (
 	"sync"
 )
 
-type OSS struct {
-	Config Config
-	Bucket *oss.Bucket
-}
-
-var ossServer1 *OSS
-
-func init() {
-	var err error
-	once := sync.Once{}
-	once.Do(func() {
-		ossServer1, err = NewOSS(Config{
-			Endpoint:        "",
-			AccessKeyID:     "",
-			AccessKeySecret: "",
-			BucketName:      "",
-			downloadInfo:    NewDownloadInfo(),
-		})
-		if err != nil {
-			panic(err)
-		}
-	})
-}
-
-func newOSS(config Config, bucket *oss.Bucket) *OSS {
-	return &OSS{Config: config, Bucket: bucket}
-}
-
 type Config struct {
 	Endpoint        string
 	AccessKeyID     string
 	AccessKeySecret string
 	BucketName      string
 	downloadInfo    *DownloadInfo
+}
+
+type OSS struct {
+	Config Config
+	Bucket *oss.Bucket
+}
+
+var server1 *OSS
+var server2 *OSS
+
+func init() {
+	var err error
+	once := sync.Once{}
+	once.Do(func() {
+		server1, err = NewOSS(Config{
+			Endpoint:        "https://oss-cn-shanghai.aliyuncs.com",
+			AccessKeyID:     "LTAIeVGE3zRrmiNm",
+			AccessKeySecret: "F6twxkASutmcZbpPdFEqe4igtpFtu4",
+			BucketName:      "dbcache",
+			downloadInfo:    NewDownloadInfo(),
+		})
+		if err != nil {
+			panic(err)
+		}
+
+		server2, err = NewOSS(Config{
+			Endpoint:        "https://oss-cn-shanghai.aliyuncs.com",
+			AccessKeyID:     "LTAIeVGE3zRrmiNm",
+			AccessKeySecret: "F6twxkASutmcZbpPdFEqe4igtpFtu4",
+			BucketName:      "dbipfs",
+			downloadInfo:    NewDownloadInfo(),
+		})
+		if err != nil {
+			panic(err)
+		}
+
+	})
+}
+
+func newOSS(config Config, bucket *oss.Bucket) *OSS {
+	return &OSS{Config: config, Bucket: bucket}
 }
 
 func (c *Config) DownloadInfo() *DownloadInfo {
@@ -85,6 +98,10 @@ type Progress interface {
 
 type progress struct {
 	objectKey string
+}
+
+func NewProgress() Progress {
+	return &progress{}
 }
 
 func (p *progress) Option() oss.Option {
@@ -140,4 +157,31 @@ func (o *OSS) Download(p Progress) error {
 		return err
 	}
 	return nil
+}
+
+func (o *OSS) Upload(p Progress) error {
+	di := o.Config.DownloadInfo()
+	fp := filepath.Join(di.DirPath, p.ObjectKey())
+	err := o.Bucket.UploadFile(p.ObjectKey(), fp, di.PartSize, di.Routines, p.Option(), di.Checkpoint)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (o *OSS) URL(p Progress) (string, error) {
+	signedURL, err := o.Bucket.SignURL(p.ObjectKey(), oss.HTTPGet, 60*60*24)
+	if err != nil {
+		return "", err
+	}
+	return signedURL, err
+
+}
+
+func Server1() *OSS {
+	return server1
+}
+
+func Server2() *OSS {
+	return server2
 }

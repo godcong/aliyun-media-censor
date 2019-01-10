@@ -4,6 +4,7 @@ import (
 	"github.com/json-iterator/go"
 	"io"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"time"
 )
@@ -70,6 +71,7 @@ func UnmarshalJSON(reader io.Reader, v interface{}) error {
 	if err != nil {
 		return err
 	}
+	log.Println(string(bytes))
 	err = jsoniter.Unmarshal(bytes, v)
 	if err != nil {
 		return err
