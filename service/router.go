@@ -42,6 +42,38 @@ func Router(eng *gin.Engine) {
 		success(ctx, u)
 	})
 
+	g0.GET("validatepic", func(ctx *gin.Context) {
+		server := oss.Server2()
+		p := oss.NewProgress()
+		p.SetObjectKey("img20120822103826045350.jpg")
+		err := server.Upload(p)
+		if err != nil {
+			log.Println(err)
+		}
+		u, err := server.URL(p)
+
+		data, err := green.ImageAsyncScan(&green.BizData{
+			Scenes: []string{"porn"},
+			Tasks: []green.Task{
+				{
+					DataID: uuid.NewV1().String(),
+					URL:    u,
+				},
+			},
+		})
+		if err != nil {
+			failed(ctx, err.Error())
+		}
+
+		success(ctx, data)
+
+	})
+
+	g0.GET("statuspic/:id", func(ctx *gin.Context) {
+		data, err := green.ImageAsyncResult(ctx.Param("id"))
+		log.Println(data, err)
+	})
+
 	g0.GET("validate", func(ctx *gin.Context) {
 		server := oss.Server2()
 		p := oss.NewProgress()

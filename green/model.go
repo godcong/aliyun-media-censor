@@ -24,8 +24,20 @@ type ClientInfo struct {
 }
 
 type Frame struct {
-	URL    string `json:"url,omitempty"`
-	Offset int    `json:"offset,omitempty"`
+	URL       string  `json:"url,omitempty"`
+	Offset    int     `json:"offset"`
+	Rate      float64 `json:"rate,omitempty"`
+	SfaceData []struct {
+		Faces []struct {
+			ID   string  `json:"id,omitempty"`
+			Name string  `json:"name,omitempty"`
+			Rate float64 `json:"rate,omitempty"`
+		} `json:"faces,omitempty"`
+		H int `json:"h,omitempty"`
+		W int `json:"w,omitempty"`
+		X int `json:"x,omitempty"`
+		Y int `json:"y,omitempty"`
+	} `json:"sfaceData,omitempty"`
 }
 
 type Task struct {
@@ -47,37 +59,25 @@ type BizData struct {
 	Tasks       []Task   `json:"tasks"`
 }
 
+type Result struct {
+	Frames     []Frame `json:"frames"`
+	Label      string  `json:"label"`
+	Rate       float64 `json:"rate"`
+	Scene      string  `json:"scene"`
+	Suggestion string  `json:"suggestion"`
+}
+
 type ResultData struct {
 	Code int `json:"code"`
 	Data []struct {
-		Code    int    `json:"code"`
-		DataID  string `json:"dataId"`
-		Msg     string `json:"msg"`
-		Results []struct {
-			Frames []struct {
-				Label     string  `json:"label"`
-				Offset    int     `json:"offset"`
-				Rate      float64 `json:"rate"`
-				SfaceData []struct {
-					Faces []struct {
-						ID   string  `json:"id"`
-						Name string  `json:"name"`
-						Rate float64 `json:"rate"`
-					} `json:"faces"`
-					H int `json:"h"`
-					W int `json:"w"`
-					X int `json:"x"`
-					Y int `json:"y"`
-				} `json:"sfaceData"`
-				URL string `json:"url"`
-			} `json:"frames"`
-			Label      string  `json:"label"`
-			Rate       float64 `json:"rate"`
-			Scene      string  `json:"scene"`
-			Suggestion string  `json:"suggestion"`
-		} `json:"results"`
-		TaskID string `json:"taskId"`
-		URL    string `json:"url"`
+		Code   int    `json:"code"`
+		DataID string `json:"dataId"`
+		Extras struct {
+		} `json:"extras"`
+		Msg     string   `json:"msg"`
+		Results []Result `json:"results"`
+		TaskID  string   `json:"taskId"`
+		URL     string   `json:"url"`
 	} `json:"data"`
 	Msg       string `json:"msg"`
 	RequestID string `json:"requestId"`
