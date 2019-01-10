@@ -27,7 +27,7 @@ func init() {
 	var err error
 	once := sync.Once{}
 	once.Do(func() {
-		//server init
+		//TODO: server init
 
 		if err != nil {
 			panic(err)
