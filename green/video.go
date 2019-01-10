@@ -26,18 +26,21 @@ func Link(url string) string {
 	return AliSite + "/" + url
 }
 
+func VideoSyncScanWithCallback(data *BizData, fn func(response *green.VideoSyncScanResponse, err error)) <-chan int {
+	req := green.CreateVideoSyncScanRequest()
+	req.Content = []byte(data.JSON())
+	return DefaultClient.VideoSyncScanWithCallback(req, fn)
+
+}
+
 func VideoSyncScan(data *BizData) (*ResultData, error) {
-	url := Link("green/video/syncscan")
-	log.Println("url:", url)
-	//resp := DefaultClient.GetResponse(url, &ClientInfo{}, data.JSON())
-	//
-	//var res ResultData
-	//err := jsoniter.Unmarshal([]byte(resp), &res)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//return &res, nil
-	return &ResultData{}, nil
+	req := green.CreateVideoSyncScanRequest()
+	req.Content = []byte(data.JSON())
+	resp, err := DefaultClient.VideoSyncScan(req)
+	if err != nil {
+		return &ResultData{}, err
+	}
+	return ResponseToResultData(resp)
 }
 
 func VideoAsyncScan(data *BizData) (string, error) {

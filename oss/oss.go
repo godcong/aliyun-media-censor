@@ -27,24 +27,8 @@ func init() {
 	var err error
 	once := sync.Once{}
 	once.Do(func() {
-		server1, err = NewOSS(Config{
-			Endpoint:        "https://oss-cn-shanghai.aliyuncs.com",
-			AccessKeyID:     "LTAIeVGE3zRrmiNm",
-			AccessKeySecret: "F6twxkASutmcZbpPdFEqe4igtpFtu4",
-			BucketName:      "dbcache",
-			downloadInfo:    NewDownloadInfo(),
-		})
-		if err != nil {
-			panic(err)
-		}
+		//server init
 
-		server2, err = NewOSS(Config{
-			Endpoint:        "https://oss-cn-shanghai.aliyuncs.com",
-			AccessKeyID:     "LTAIeVGE3zRrmiNm",
-			AccessKeySecret: "F6twxkASutmcZbpPdFEqe4igtpFtu4",
-			BucketName:      "dbipfs",
-			downloadInfo:    NewDownloadInfo(),
-		})
 		if err != nil {
 			panic(err)
 		}
@@ -184,4 +168,8 @@ func Server1() *OSS {
 
 func Server2() *OSS {
 	return server2
+}
+
+func Server3() {
+
 }
