@@ -5,8 +5,10 @@ import (
 	"github.com/godcong/aliyun-media-censor/green"
 	"github.com/godcong/aliyun-media-censor/oss"
 	"github.com/satori/go.uuid"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // Router ...
@@ -19,19 +21,39 @@ func Router(eng *gin.Engine) {
 		ctx.JSON(http.StatusOK, gin.H{"message": "pong"})
 	})
 
-	g0.GET("list", func(ctx *gin.Context) {
-		server := oss.Server2()
-		p := oss.NewProgress()
-		p.SetObjectKey("5F6688B5.mp4")
-		err := server.Upload(p)
+	g0.GET("list/:path", func(ctx *gin.Context) {
+		path := ctx.Param("path")
+		path = strings.Replace(path, ".", "/", -1)
+		files, err := ioutil.ReadDir(path)
 		if err != nil {
-			log.Println(err)
+			failed(ctx, err.Error())
+			return
 		}
+		var fileNames []string
+
+		for _, file := range files {
+			if !file.IsDir() {
+				fileNames = append(fileNames, file.Name())
+			}
+		}
+
+		success(ctx, fileNames)
 	})
-	g0.GET("url", func(ctx *gin.Context) {
+
+	g0.POST("upload", func(ctx *gin.Context) {
+		filePath := ctx.PostForm("name")
+
 		server := oss.Server2()
 		p := oss.NewProgress()
-		p.SetObjectKey("5F6688B5.mp4")
+		p.SetObjectKey(filePath)
+
+		if !server.IsExist(p) {
+			err := server.Upload(p)
+			if err != nil {
+				failed(ctx, err.Error())
+				return
+			}
+		}
 
 		u, err := server.URL(p)
 		if err != nil {
@@ -42,16 +64,18 @@ func Router(eng *gin.Engine) {
 		success(ctx, u)
 	})
 
-	g0.GET("validatepic", func(ctx *gin.Context) {
+	g0.POST("validate/:name/pic", func(ctx *gin.Context) {
+		name := ctx.Param("name")
 		server := oss.Server2()
 		p := oss.NewProgress()
-		p.SetObjectKey("img20120822103826045350.jpg")
-		err := server.Upload(p)
-		if err != nil {
-			log.Println(err)
-		}
-		u, err := server.URL(p)
+		p.SetObjectKey(name)
 
+		if !server.IsExist(p) {
+			failed(ctx, "obejct key is not exist")
+			return
+		}
+
+		u, err := server.URL(p)
 		data, err := green.ImageAsyncScan(&green.BizData{
 			Scenes: []string{"porn"},
 			Tasks: []green.Task{
@@ -69,18 +93,32 @@ func Router(eng *gin.Engine) {
 
 	})
 
-	g0.GET("statuspic/:id", func(ctx *gin.Context) {
+	g0.GET("status/:id/pic", func(ctx *gin.Context) {
 		data, err := green.ImageAsyncResult(ctx.Param("id"))
-		log.Println(data, err)
+		if err != nil {
+			failed(ctx, err.Error())
+			return
+		}
+		success(ctx, data)
 	})
 
-	g0.GET("validate", func(ctx *gin.Context) {
+	g0.POST("validate/:name/video", func(ctx *gin.Context) {
+		name := ctx.Param("name")
+
 		server := oss.Server2()
 		p := oss.NewProgress()
-		p.SetObjectKey("5F6688B5.mp4")
+		p.SetObjectKey(name)
+
+		if !server.IsExist(p) {
+			failed(ctx, "obejct key is not exist")
+			return
+		}
 
 		u, err := server.URL(p)
-
+		if err != nil {
+			failed(ctx, err.Error())
+			return
+		}
 		data, err := green.VideoAsyncScan(&green.BizData{
 			Scenes:      []string{"porn", "terrorism", "ad", "live", "sface"},
 			AudioScenes: []string{"antispam"},
@@ -93,14 +131,21 @@ func Router(eng *gin.Engine) {
 				},
 			},
 		})
-		log.Println(data, err)
+		if err != nil {
+			failed(ctx, err.Error())
+			return
+		}
 
 		success(ctx, data)
 	})
 
-	g0.GET("status/:id", func(ctx *gin.Context) {
+	g0.GET("status/:id/video", func(ctx *gin.Context) {
 		data, err := green.VideoResults(ctx.Param("id"))
-		log.Println(data, err)
+		if err != nil {
+			failed(ctx, err.Error())
+			return
+		}
+		success(ctx, data)
 	})
 
 }

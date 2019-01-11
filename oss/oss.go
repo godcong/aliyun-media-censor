@@ -3,6 +3,7 @@ package oss
 import (
 	"fmt"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
+	"log"
 	"path/filepath"
 	"sync"
 )
@@ -160,6 +161,15 @@ func (o *OSS) URL(p Progress) (string, error) {
 	}
 	return signedURL, err
 
+}
+
+func (o *OSS) IsExist(p Progress) bool {
+	exist, err := o.Bucket.IsObjectExist(p.ObjectKey())
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return exist
 }
 
 func Server1() *OSS {
