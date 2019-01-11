@@ -78,11 +78,22 @@ type Progress interface {
 	ProgressChanged(event *oss.ProgressEvent)
 	SetObjectKey(objectKey string)
 	ObjectKey() string
+	Path() string
+	SetPath(path string)
 	Option() oss.Option
 }
 
 type progress struct {
 	objectKey string
+	path      string
+}
+
+func (p *progress) Path() string {
+	return p.path
+}
+
+func (p *progress) SetPath(path string) {
+	p.path = path
 }
 
 func NewProgress() Progress {
@@ -146,7 +157,11 @@ func (o *OSS) Download(p Progress) error {
 
 func (o *OSS) Upload(p Progress) error {
 	di := o.Config.DownloadInfo()
-	fp := filepath.Join(di.DirPath, p.ObjectKey())
+	path := di.DirPath
+	if p.Path() != "" {
+		path = p.Path()
+	}
+	fp := filepath.Join(path, p.ObjectKey())
 	err := o.Bucket.UploadFile(p.ObjectKey(), fp, di.PartSize, di.Routines, p.Option(), di.Checkpoint)
 	if err != nil {
 		return err

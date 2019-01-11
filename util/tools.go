@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -85,4 +87,44 @@ func MarshalJSON(v interface{}) ([]byte, error) {
 		return nil, err
 	}
 	return bytes, err
+}
+
+func FileList(dir string) ([]string, error) {
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	var fileNames []string
+	for _, file := range files {
+		if !file.IsDir() {
+			fileNames = append(fileNames, file.Name())
+		}
+	}
+	return fileNames, nil
+}
+
+func Files(path string, pattern ...string) []string {
+	if pattern == nil {
+		path += "/*.ts"
+	} else {
+		path += "/" + pattern[0]
+	}
+	matches, err := filepath.Glob(path)
+	if err != nil {
+		return nil
+	}
+	return matches
+}
+
+func IsDir(name string) bool {
+	file, err := os.OpenFile(name, os.O_RDONLY|os.O_SYNC, os.ModePerm)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+	fi, err := file.Stat()
+	if err != nil {
+		return false
+	}
+	return fi.IsDir()
 }

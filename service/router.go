@@ -1,12 +1,13 @@
 package service
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/godcong/aliyun-media-censor/ffmpeg"
 	"github.com/godcong/aliyun-media-censor/green"
 	"github.com/godcong/aliyun-media-censor/oss"
+	"github.com/godcong/aliyun-media-censor/util"
 	"github.com/satori/go.uuid"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -25,72 +26,72 @@ func Router(eng *gin.Engine) {
 	g0.GET("list/:path", func(ctx *gin.Context) {
 		path := ctx.Param("path")
 		path = strings.Replace(path, ".", "/", -1)
-		files, err := ioutil.ReadDir(path)
+
+		files, err := util.FileList(path)
 		if err != nil {
 			failed(ctx, err.Error())
 			return
 		}
-		var fileNames []string
-
-		for _, file := range files {
-			if !file.IsDir() {
-				fileNames = append(fileNames, file.Name())
-			}
-		}
-
-		success(ctx, fileNames)
+		success(ctx, files)
 	})
 
 	g0.POST("upload", func(ctx *gin.Context) {
 		filePath := ctx.PostForm("name")
-		ts, err := ffmpeg.TransferSplit("./download/"+filePath, "")
+		ts, err := ffmpeg.TransferSplit("./download/", filePath)
 		if err != nil {
+			log.Println(err)
 			failed(ctx, err.Error())
 			return
 		}
 		log.Println(ts)
 		server := oss.Server2()
 		p := oss.NewProgress()
-		p.SetObjectKey(filePath)
 
-		if !server.IsExist(p) {
-			err := server.Upload(p)
-			if err != nil {
-				failed(ctx, err.Error())
-				return
-			}
-		}
-
-		u, err := server.URL(p)
+		files, err := util.FileList("transferred/" + filePath)
 		if err != nil {
+			log.Println(err)
 			failed(ctx, err.Error())
 			return
 		}
-		log.Println(u)
-		success(ctx, u)
-	})
 
-	g0.POST("validate/:name/pic", func(ctx *gin.Context) {
-		name := ctx.Param("name")
-		server := oss.Server2()
-		p := oss.NewProgress()
-		p.SetObjectKey(name)
+		var urls []string
 
-		if !server.IsExist(p) {
-			failed(ctx, "obejct key is not exist")
-			return
+		for _, file := range files {
+			p.SetObjectKey(filePath + "/" + file)
+			p.SetPath("transferred")
+			if !server.IsExist(p) {
+				err := server.Upload(p)
+				if err != nil {
+					log.Println(err)
+					failed(ctx, err.Error())
+					return
+				}
+			}
+			u, err := server.URL(p)
+			if err != nil {
+				log.Println(err)
+				failed(ctx, err.Error())
+				return
+			}
+			urls = append(urls, u)
 		}
 
-		u, err := server.URL(p)
-		data, err := green.ImageAsyncScan(&green.BizData{
-			Scenes: []string{"porn"},
-			Tasks: []green.Task{
-				{
-					DataID: uuid.NewV1().String(),
-					URL:    u,
+		success(ctx, urls)
+	})
+
+	g0.POST("validate/pic", func(ctx *gin.Context) {
+		data, err := ParseValidateDo(ctx, func(url string) (data *green.ResultData, e error) {
+			return green.ImageAsyncScan(&green.BizData{
+				Scenes: []string{"porn"},
+				Tasks: []green.Task{
+					{
+						DataID: uuid.NewV1().String(),
+						URL:    url,
+					},
 				},
-			},
+			})
 		})
+
 		if err != nil {
 			failed(ctx, err.Error())
 		}
@@ -108,40 +109,25 @@ func Router(eng *gin.Engine) {
 		success(ctx, data)
 	})
 
-	g0.POST("validate/:name/video", func(ctx *gin.Context) {
-		name := ctx.Param("name")
-
-		server := oss.Server2()
-		p := oss.NewProgress()
-		p.SetObjectKey(name)
-
-		if !server.IsExist(p) {
-			failed(ctx, "obejct key is not exist")
-			return
-		}
-
-		u, err := server.URL(p)
-		if err != nil {
-			failed(ctx, err.Error())
-			return
-		}
-		data, err := green.VideoAsyncScan(&green.BizData{
-			Scenes:      []string{"porn", "terrorism", "ad", "live", "sface"},
-			AudioScenes: []string{"antispam"},
-			Tasks: []green.Task{
-				{
-					DataID:    uuid.NewV1().String(),
-					URL:       u,
-					Interval:  30,
-					MaxFrames: 200,
-				},
-			},
+	g0.POST("validate/video", func(ctx *gin.Context) {
+		data, err := ParseValidateDo(ctx, func(url string) (data *green.ResultData, e error) {
+			return green.VideoAsyncScan(&green.BizData{
+				Scenes:      []string{"porn", "terrorism", "ad", "live", "sface"},
+				AudioScenes: []string{"antispam"},
+				Tasks: []green.Task{
+					{
+						DataID:    uuid.NewV1().String(),
+						URL:       url,
+						Interval:  30,
+						MaxFrames: 200,
+					},
+				}})
 		})
+
 		if err != nil {
 			failed(ctx, err.Error())
 			return
 		}
-
 		success(ctx, data)
 	})
 
@@ -154,4 +140,40 @@ func Router(eng *gin.Engine) {
 		success(ctx, data)
 	})
 
+}
+
+func ParseValidateDo(ctx *gin.Context, fn func(url string) (*green.ResultData, error)) ([]*green.ResultData, error) {
+	server := oss.Server2()
+	p := oss.NewProgress()
+
+	tp := ctx.PostForm("type")
+	names := ctx.PostFormArray("names")
+	name := ctx.PostForm("name")
+
+	if tp != "list" {
+		names = []string{name}
+	}
+
+	var dataList []*green.ResultData
+
+	for _, name := range names {
+		p.SetObjectKey(name)
+
+		if !server.IsExist(p) {
+			return nil, errors.New("obejct key is not exist")
+		}
+
+		u, err := server.URL(p)
+		if err != nil {
+			return nil, err
+		}
+
+		resultData, err := fn(u)
+
+		if err != nil {
+			return nil, err
+		}
+		dataList = append(dataList, resultData)
+	}
+	return dataList, nil
 }
