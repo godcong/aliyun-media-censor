@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/godcong/aliyun-media-censor/ffmpeg"
 	"github.com/godcong/aliyun-media-censor/green"
 	"github.com/godcong/aliyun-media-censor/oss"
 	"github.com/satori/go.uuid"
@@ -42,7 +43,12 @@ func Router(eng *gin.Engine) {
 
 	g0.POST("upload", func(ctx *gin.Context) {
 		filePath := ctx.PostForm("name")
-
+		ts, err := ffmpeg.TransferSplit("./download/" + filePath)
+		if err != nil {
+			failed(ctx, err.Error())
+			return
+		}
+		log.Println(ts)
 		server := oss.Server2()
 		p := oss.NewProgress()
 		p.SetObjectKey(filePath)
@@ -126,7 +132,7 @@ func Router(eng *gin.Engine) {
 				{
 					DataID:    uuid.NewV1().String(),
 					URL:       u,
-					Interval:  1,
+					Interval:  30,
 					MaxFrames: 200,
 				},
 			},
