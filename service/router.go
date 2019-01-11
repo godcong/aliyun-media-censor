@@ -100,8 +100,9 @@ func Router(eng *gin.Engine) {
 
 	})
 
-	g0.GET("status/:id/pic", func(ctx *gin.Context) {
-		data, err := green.ImageAsyncResult(ctx.Param("id"))
+	g0.GET("status/pic", func(ctx *gin.Context) {
+		id := ctx.QueryArray("id")
+		data, err := green.ImageAsyncResult(id...)
 		if err != nil {
 			failed(ctx, err.Error())
 			return
@@ -131,8 +132,9 @@ func Router(eng *gin.Engine) {
 		success(ctx, data)
 	})
 
-	g0.GET("status/:id/video", func(ctx *gin.Context) {
-		data, err := green.VideoResults(ctx.Param("id"))
+	g0.GET("status/video", func(ctx *gin.Context) {
+		id := ctx.QueryArray("id")
+		data, err := green.VideoResults(id...)
 		if err != nil {
 			failed(ctx, err.Error())
 			return
