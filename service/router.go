@@ -43,7 +43,7 @@ func Router(eng *gin.Engine) {
 
 	g0.POST("upload", func(ctx *gin.Context) {
 		filePath := ctx.PostForm("name")
-		ts, err := ffmpeg.TransferSplit("./download/" + filePath)
+		ts, err := ffmpeg.TransferSplit("./download/"+filePath, "")
 		if err != nil {
 			failed(ctx, err.Error())
 			return
