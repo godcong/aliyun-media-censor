@@ -23,12 +23,41 @@ func Router(eng *gin.Engine) {
 		ctx.JSON(http.StatusOK, gin.H{"message": "pong"})
 	})
 
+	g0.POST("download", func(ctx *gin.Context) {
+		server := oss.Server2()
+		p := oss.NewProgress()
+
+		//tp := ctx.PostForm("type")
+		//names := ctx.PostFormArray("names")
+		name := ctx.PostForm("name")
+
+		//if tp != "list" {
+		//	names = []string{name}
+		//}
+
+		//for _, name := range names {
+		p.SetObjectKey(name)
+		if !server.IsExist(p) {
+			failed(ctx, "obejct key is not exist")
+			return
+		}
+		err := server.Download(p)
+		if err != nil {
+			log.Println(err)
+			failed(ctx, err.Error())
+			return
+		}
+		success(ctx, p.ObjectKey())
+		//}
+	})
+
 	g0.GET("list/:path", func(ctx *gin.Context) {
 		path := ctx.Param("path")
 		path = strings.Replace(path, ".", "/", -1)
 
 		files, err := util.FileList(path)
 		if err != nil {
+			log.Println(err)
 			failed(ctx, err.Error())
 			return
 		}
@@ -144,6 +173,7 @@ func Router(eng *gin.Engine) {
 
 }
 
+// ParseValidateDo ...
 func ParseValidateDo(ctx *gin.Context, fn func(url string) (*green.ResultData, error)) ([]*green.ResultData, error) {
 	server := oss.Server2()
 	p := oss.NewProgress()

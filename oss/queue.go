@@ -7,8 +7,10 @@ import (
 	"time"
 )
 
+// DefaultSleepTime ...
 const DefaultSleepTime = 5 * time.Second
 
+// QueueInfo ...
 type QueueInfo struct {
 	ObjectKey string
 }
@@ -67,6 +69,7 @@ func (s *Queue) Clear() {
 	s.infos = []*QueueInfo{}
 }
 
+// CallbackFunc ...
 type CallbackFunc func(chan<- string, *QueueInfo)
 
 var (
@@ -89,6 +92,7 @@ func Pop() *QueueInfo {
 	return nil
 }
 
+// RegisterCallback ...
 func RegisterCallback(fn CallbackFunc) {
 	globalCallback = fn
 }
