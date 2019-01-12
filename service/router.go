@@ -10,6 +10,7 @@ import (
 	"github.com/satori/go.uuid"
 	"log"
 	"net/http"
+	"path/filepath"
 	"strings"
 )
 
@@ -27,15 +28,8 @@ func Router(eng *gin.Engine) {
 		server := oss.Server2()
 		p := oss.NewProgress()
 
-		//tp := ctx.PostForm("type")
-		//names := ctx.PostFormArray("names")
 		name := ctx.PostForm("name")
 
-		//if tp != "list" {
-		//	names = []string{name}
-		//}
-
-		//for _, name := range names {
 		p.SetObjectKey(name)
 		if !server.IsExist(p) {
 			failed(ctx, "obejct key is not exist")
@@ -48,7 +42,6 @@ func Router(eng *gin.Engine) {
 			return
 		}
 		success(ctx, p.ObjectKey())
-		//}
 	})
 
 	g0.GET("list/:path", func(ctx *gin.Context) {
@@ -66,6 +59,33 @@ func Router(eng *gin.Engine) {
 
 	g0.POST("upload", func(ctx *gin.Context) {
 		filePath := ctx.PostForm("name")
+		tp := ctx.PostForm("type")
+
+		server := oss.Server2()
+		p := oss.NewProgress()
+		var urls []string
+		files := []string{filepath.Join("./download", filePath)}
+		if tp == "pic" {
+			p.SetObjectKey(filePath)
+			if !server.IsExist(p) {
+				err := server.Upload(p)
+				if err != nil {
+					log.Println(err)
+					failed(ctx, err.Error())
+					return
+				}
+			}
+			u, err := server.URL(p)
+			if err != nil {
+				log.Println(err)
+				failed(ctx, err.Error())
+				return
+			}
+			urls = append(urls, u)
+			success(ctx, urls)
+			return
+		}
+
 		ts, err := ffmpeg.TransferSplit("./download/", filePath)
 		if err != nil {
 			log.Println(err)
@@ -73,17 +93,13 @@ func Router(eng *gin.Engine) {
 			return
 		}
 		log.Println(ts)
-		server := oss.Server2()
-		p := oss.NewProgress()
 
-		files, err := util.FileList("transferred/" + filePath)
+		files, err = util.FileList("transferred/" + filePath)
 		if err != nil {
 			log.Println(err)
 			failed(ctx, err.Error())
 			return
 		}
-
-		var urls []string
 
 		for _, file := range files {
 			p.SetObjectKey(filePath + "/" + file)
@@ -106,6 +122,10 @@ func Router(eng *gin.Engine) {
 		}
 
 		success(ctx, urls)
+	})
+
+	g0.POST("validate/frame", func(ctx *gin.Context) {
+
 	})
 
 	g0.POST("validate/pic", func(ctx *gin.Context) {
