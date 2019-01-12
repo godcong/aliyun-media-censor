@@ -83,6 +83,15 @@ type ResultData struct {
 	RequestID string `json:"requestId"`
 }
 
+func (data *ResultData) JSON() []byte {
+	bytes, err := jsoniter.Marshal(data)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	return bytes
+}
+
 func (data *BizData) JSON() []byte {
 	bytes, err := jsoniter.Marshal(data)
 	if err != nil {
