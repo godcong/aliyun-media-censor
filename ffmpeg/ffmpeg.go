@@ -169,3 +169,13 @@ func TransferSplitWith(path string, src string, size string, time string) (strin
 func TransferSplit(path string, src string) (string, error) {
 	return TransferSplitWith(path, src, "320*240", "1800")
 }
+
+// TransferSplit ...
+func TransferJPG(path string, src string) (string, error) {
+	_ = os.MkdirAll("transferred/"+src, os.ModePerm)
+	return Run("-i", path+src,
+		"-f", "image2",
+		"-vf", "fps=fps=1/15",
+		"transferred/"+src+"out-%03d.jpg",
+	)
+}
