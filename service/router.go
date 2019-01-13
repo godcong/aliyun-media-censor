@@ -17,7 +17,9 @@ import (
 // Router ...
 func Router(eng *gin.Engine) {
 	verV0 := "v0"
-	eng.Use(AccessControlAllow)
+	eng.Use(AccessControlAllow, func(ctx *gin.Context) {
+		log.Println("visit", ctx.Request.URL.String())
+	})
 	g0 := eng.Group(verV0)
 	//登录
 	g0.GET("ping", func(ctx *gin.Context) {
@@ -55,6 +57,25 @@ func Router(eng *gin.Engine) {
 			return
 		}
 		success(ctx, files)
+	})
+
+	g0.GET("url", func(ctx *gin.Context) {
+		server := oss.Server2()
+		key := ctx.Query("key")
+		p := oss.NewProgress()
+		p.SetObjectKey(key)
+
+		if !server.IsExist(p) {
+			failed(ctx, "object is not exist")
+			return
+
+		}
+		url, err := server.URL(p)
+		if !server.IsExist(p) {
+			failed(ctx, err.Error())
+			return
+		}
+		success(ctx, url)
 	})
 
 	g0.POST("fileupload", func(ctx *gin.Context) {
