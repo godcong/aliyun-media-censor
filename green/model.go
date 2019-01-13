@@ -27,7 +27,7 @@ type ClientInfo struct {
 // Frame ...
 type Frame struct {
 	URL       string  `json:"url,omitempty"`
-	Offset    int     `json:"offset"`
+	Offset    int     `json:"offset,omitempty"`
 	Rate      float64 `json:"rate,omitempty"`
 	SfaceData []struct {
 		Faces []struct {
@@ -89,9 +89,12 @@ type ResultData struct {
 	RequestID string `json:"requestId"`
 }
 
-// JSON ...
-func (data *ResultData) JSON() []byte {
-	bytes, err := jsoniter.Marshal(data)
+// ArrayedJSON ...
+func (data *ResultData) ArrayedJSON() []byte {
+	rd := []*ResultData{
+		data,
+	}
+	bytes, err := jsoniter.Marshal(rd)
 	if err != nil {
 		log.Println(err)
 		return nil

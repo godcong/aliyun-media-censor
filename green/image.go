@@ -22,6 +22,21 @@ func ImageAsyncScan(data *BizData) (*ResultData, error) {
 	return &d, err
 }
 
+// ImageSyncScan ...
+func ImageSyncScan(data *BizData) (*ResultData, error) {
+	req := green.CreateImageSyncScanRequest()
+	req.Content = []byte(data.JSON())
+	response, err := DefaultClient.ImageSyncScan(req)
+	if err != nil {
+		return &ResultData{}, err
+	}
+	var d ResultData
+	err = jsoniter.Unmarshal(response.GetHttpContentBytes(), &d)
+	fmt.Printf("%+v", d)
+	log.Println(response.String())
+	return &d, err
+}
+
 // ImageAsyncResult ...
 func ImageAsyncResult(request ...string) (*ResultData, error) {
 	req := green.CreateImageAsyncScanResultsRequest()

@@ -103,7 +103,7 @@ func QueueProcessJPG(output chan<- string, info *oss.QueueInfo) {
 		}
 
 		var frames []Frame
-		count := 1
+		count := 0
 		for _, file := range files {
 			p.SetObjectKey(info.ObjectKey + "/" + file)
 			p.SetPath("transferred")
@@ -128,27 +128,29 @@ func QueueProcessJPG(output chan<- string, info *oss.QueueInfo) {
 			})
 			count += 15
 		}
-
+		log.Println("request:", info.RequestKey)
+		log.Println("frames:", frames)
 		data := &BizData{
+			Scenes: []string{"porn", "terrorism", "ad", "live", "sface"},
 			Tasks: []Task{
 				{
-					ClientInfo:  nil,
-					DataID:      "",
-					URL:         "",
-					Frames:      frames,
-					FramePrefix: "",
-					Interval:    0,
-					MaxFrames:   0,
+					Frames: frames,
 				}},
 		}
 
 		resultData, err := VideoSyncScan(data)
+		msg := "success"
+		code := "0"
+		if err != nil {
+			msg = err.Error()
+			code = "-1"
+		}
 
 		resp, err := http.PostForm(info.CallbackURL, url.Values{
 			"request_key": []string{info.RequestKey},
-			"code":        []string{"-1"},
-			"msg":         []string{err.Error()},
-			"detail":      []string{string(resultData.JSON())},
+			"code":        []string{code},
+			"message":     []string{msg},
+			"detail":      []string{string(resultData.ArrayedJSON())},
 		})
 
 		if err != nil {

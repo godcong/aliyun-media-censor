@@ -57,6 +57,31 @@ func Router(eng *gin.Engine) {
 		success(ctx, files)
 	})
 
+	g0.POST("fileupload", func(ctx *gin.Context) {
+		filePath := ctx.PostForm("name")
+
+		server := oss.Server2()
+		p := oss.NewProgress()
+		p.SetObjectKey(filePath)
+
+		if !server.IsExist(p) {
+			err := server.Upload(p)
+			if err != nil {
+				log.Println(err)
+				failed(ctx, err.Error())
+				return
+			}
+		}
+		url, err := server.URL(p)
+		if err != nil {
+			log.Println(err)
+			failed(ctx, err.Error())
+			return
+		}
+		success(ctx, url)
+
+	})
+
 	g0.POST("upload", func(ctx *gin.Context) {
 		filePath := ctx.PostForm("name")
 		tp := ctx.PostForm("type")
@@ -132,14 +157,14 @@ func Router(eng *gin.Engine) {
 			CallbackFunc: green.QueueProcessJPG}
 
 		oss.Push(&qi)
-
-		success(ctx, qi)
+		var rd []*green.Result
+		success(ctx, rd)
 	})
 
 	g0.POST("validate/pic", func(ctx *gin.Context) {
 		data, err := ParseValidateDo(ctx, func(url string) (data *green.ResultData, e error) {
-			return green.ImageAsyncScan(&green.BizData{
-				Scenes: []string{"porn"},
+			return green.ImageSyncScan(&green.BizData{
+				Scenes: []string{"porn", "terrorism", "ad", "live", "sface"},
 				Tasks: []green.Task{
 					{
 						DataID: uuid.NewV1().String(),

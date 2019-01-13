@@ -15,7 +15,7 @@ type QueueInfo struct {
 	ObjectKey    string
 	CallbackURL  string
 	RequestKey   string
-	CallbackFunc func(chan<- string, *QueueInfo)
+	CallbackFunc func(chan<- string, *QueueInfo) `json:"-"`
 }
 
 // Queue ...
@@ -108,9 +108,6 @@ func nilQueue(s chan<- string) {
 
 // StartQueue ...
 func StartQueue(ctx context.Context, process int) {
-	if globalCallback == nil {
-		panic("nil callback nothing to do")
-	}
 
 	var c context.Context
 	c, globalCancel = context.WithCancel(ctx)
@@ -128,7 +125,14 @@ func StartQueue(ctx context.Context, process int) {
 			case v := <-threads:
 				println("success:", v)
 				if s := Pop(); s != nil {
-					go globalCallback(threads, s)
+					if s.CallbackFunc != nil {
+						go s.CallbackFunc(threads, s)
+					} else if globalCallback != nil {
+						go globalCallback(threads, s)
+					} else {
+
+					}
+
 				} else {
 					time.Sleep(DefaultSleepTime)
 					go nilQueue(threads)
