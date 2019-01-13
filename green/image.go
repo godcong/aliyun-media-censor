@@ -7,6 +7,7 @@ import (
 	"log"
 )
 
+// ImageAsyncScan ...
 func ImageAsyncScan(data *BizData) (*ResultData, error) {
 	req := green.CreateImageAsyncScanRequest()
 	req.Content = []byte(data.JSON())
@@ -21,6 +22,7 @@ func ImageAsyncScan(data *BizData) (*ResultData, error) {
 	return &d, err
 }
 
+// ImageAsyncResult ...
 func ImageAsyncResult(request ...string) (*ResultData, error) {
 	req := green.CreateImageAsyncScanResultsRequest()
 	bytes, err := jsoniter.Marshal(request[:])

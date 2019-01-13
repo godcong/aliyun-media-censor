@@ -5,6 +5,7 @@ import (
 	"log"
 )
 
+// ClientInfo ...
 type ClientInfo struct {
 	SDKVersion  string `json:"sdkVersion,omitempty"`  //否	SDK版本，通过SDK调用时，需提供该字段。
 	CFGVersion  string `json:"cfgVersion,omitempty"`  //否	配置信息版本，通过SDK调用时，需提供该字段。
@@ -15,7 +16,7 @@ type ClientInfo struct {
 	Imei        string `json:"imei,omitempty"`        //否	硬件设备码。
 	Imsi        string `json:"imsi,omitempty"`        //否	运营商设备码。
 	Umid        string `json:"umid,omitempty"`        //否	设备指纹。
-	Ip          string `json:"ip,omitempty"`          //否	该IP应该为公网IP。如果请求中不填写，服务端会尝试从链接或者从HTTP头中获取。如果请求是从设备端发起的，该字段通常不填写；如果是从后台发起的，该IP为用户的login IP或者设备的公网IP。
+	IP          string `json:"ip,omitempty"`          //否	该IP应该为公网IP。如果请求中不填写，服务端会尝试从链接或者从HTTP头中获取。如果请求是从设备端发起的，该字段通常不填写；如果是从后台发起的，该IP为用户的login IP或者设备的公网IP。
 	Os          string `json:"os,omitempty"`          //否	设备的操作系统，如：Android 6.0
 	Channel     string `json:"channel,omitempty"`     //否	渠道号。
 	HostAppName string `json:"hostAppName,omitempty"` //否	宿主应用名称。
@@ -23,6 +24,7 @@ type ClientInfo struct {
 	HostVersion string `json:"hostVersion,omitempty"` //否	宿主应用版本。
 }
 
+// Frame ...
 type Frame struct {
 	URL       string  `json:"url,omitempty"`
 	Offset    int     `json:"offset"`
@@ -40,6 +42,7 @@ type Frame struct {
 	} `json:"sfaceData,omitempty"`
 }
 
+// Task ...
 type Task struct {
 	ClientInfo  []ClientInfo `json:"clientInfo,omitempty"`
 	DataID      string       `json:"dataId,omitempty"`
@@ -50,6 +53,7 @@ type Task struct {
 	MaxFrames   int          `json:"maxFrames,omitempty"`
 }
 
+// BizData ...
 type BizData struct {
 	BizType     string   `json:"bizType,omitempty"`
 	Scenes      []string `json:"scenes"`
@@ -59,6 +63,7 @@ type BizData struct {
 	Tasks       []Task   `json:"tasks"`
 }
 
+// Result ...
 type Result struct {
 	Frames     []Frame `json:"frames"`
 	Label      string  `json:"label"`
@@ -67,6 +72,7 @@ type Result struct {
 	Suggestion string  `json:"suggestion"`
 }
 
+// ResultData ...
 type ResultData struct {
 	Code int `json:"code"`
 	Data []struct {
@@ -83,6 +89,7 @@ type ResultData struct {
 	RequestID string `json:"requestId"`
 }
 
+// JSON ...
 func (data *ResultData) JSON() []byte {
 	bytes, err := jsoniter.Marshal(data)
 	if err != nil {
@@ -92,6 +99,7 @@ func (data *ResultData) JSON() []byte {
 	return bytes
 }
 
+// JSON ...
 func (data *BizData) JSON() []byte {
 	bytes, err := jsoniter.Marshal(data)
 	if err != nil {

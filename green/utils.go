@@ -6,12 +6,14 @@ import (
 	"log"
 )
 
+// Responder ...
 type Responder interface {
 	GetHttpContentBytes() []byte
 	GetHttpContentString() string
 	IsSuccess() bool
 }
 
+// ResponseToResultData ...
 func ResponseToResultData(r Responder) (*ResultData, error) {
 	if !r.IsSuccess() {
 		return &ResultData{}, errors.New("no success")

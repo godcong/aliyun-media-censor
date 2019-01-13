@@ -13,14 +13,18 @@ import (
 	"strings"
 )
 
+// ContentTypeJSON ...
 const ContentTypeJSON = "application/json"
 
+// AliSite ...
 const AliSite = "https://green.cn-shanghai.aliyuncs.com"
 
+// URL ...
 func URL(values url.Values) string {
 	return AliSite + "?" + values.Encode()
 }
 
+// Link ...
 func Link(url string) string {
 	if strings.Index(url, "/") == 0 {
 		return AliSite + url
@@ -29,6 +33,7 @@ func Link(url string) string {
 	return AliSite + "/" + url
 }
 
+// VideoSyncScanWithCallback ...
 func VideoSyncScanWithCallback(data *BizData, fn func(response *green.VideoSyncScanResponse, err error)) <-chan int {
 	req := green.CreateVideoSyncScanRequest()
 	req.Content = []byte(data.JSON())
@@ -36,6 +41,7 @@ func VideoSyncScanWithCallback(data *BizData, fn func(response *green.VideoSyncS
 
 }
 
+// VideoSyncScan ...
 func VideoSyncScan(data *BizData) (*ResultData, error) {
 	req := green.CreateVideoSyncScanRequest()
 	req.Content = []byte(data.JSON())
@@ -46,6 +52,7 @@ func VideoSyncScan(data *BizData) (*ResultData, error) {
 	return ResponseToResultData(resp)
 }
 
+// VideoAsyncScan ...
 func VideoAsyncScan(data *BizData) (*ResultData, error) {
 	req := green.CreateVideoAsyncScanRequest()
 	req.Content = []byte(data.JSON())
@@ -56,6 +63,7 @@ func VideoAsyncScan(data *BizData) (*ResultData, error) {
 	return ResponseToResultData(resp)
 }
 
+// VideoResults ...
 func VideoResults(request ...string) (*ResultData, error) {
 	data, err := jsoniter.Marshal(request[:])
 	if err != nil {
@@ -72,6 +80,7 @@ func VideoResults(request ...string) (*ResultData, error) {
 	return ResponseToResultData(resp)
 }
 
+// QueueProcessJPG ...
 func QueueProcessJPG(output chan<- string, info *oss.QueueInfo) {
 	server := oss.Server2()
 	p := oss.NewProgress()
@@ -158,6 +167,7 @@ func QueueProcessJPG(output chan<- string, info *oss.QueueInfo) {
 
 }
 
+// Process ...
 func Process(tasks []Task) (*ResultData, error) {
 	data, err := VideoSyncScan(&BizData{
 		Scenes:      []string{"porn", "terrorism", "ad", "live", "sface"},
