@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/godcong/aliyun-media-censor/oss"
 	"github.com/godcong/aliyun-media-censor/service"
+	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -12,11 +13,11 @@ import (
 )
 
 func main() {
-	file, err := os.OpenFile("censor.log", os.O_SYNC|os.O_RDWR|os.O_CREATE, os.ModePerm)
+	file, err := os.OpenFile("censor.log", os.O_SYNC|os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
-	log.SetOutput(file)
+	log.SetOutput(io.MultiWriter(file, os.Stdout))
 	log.SetFlags(log.Lshortfile | log.Ldate)
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)

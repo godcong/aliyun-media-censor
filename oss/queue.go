@@ -108,11 +108,9 @@ func nilQueue(s chan<- string) {
 
 // StartQueue ...
 func StartQueue(ctx context.Context, process int) {
-
 	var c context.Context
 	c, globalCancel = context.WithCancel(ctx)
 	//run with a new go channel
-
 	go func() {
 		threads := make(chan string, process)
 
@@ -132,16 +130,15 @@ func StartQueue(ctx context.Context, process int) {
 					} else {
 
 					}
-
 				} else {
 					time.Sleep(DefaultSleepTime)
 					go nilQueue(threads)
 				}
 			case <-c.Done():
 				return
-			default:
-				println("default sleep 5 seconds")
-				time.Sleep(DefaultSleepTime)
+				//default:
+				//	println("default sleep 5 seconds")
+				//	time.Sleep(DefaultSleepTime)
 			}
 		}
 	}()
