@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.github.godcong.proto";
+option java_outer_classname = "CensorServiceProto";
+
+package proto;
+
+service CensorService {
+    rpc Validate (ValidateRequest) returns (CensorReply) {
+    }
+}
+
+message ValidateRequest {
+    string id = 1;
+}
+
+message RemoteDownloadRequest {
+    string objectKey = 1;
+    string backHost = 4;
+}
+
+message CensorReply {
+    int32 code = 1;
+    string message = 2;
+    CensorReplyDetail detail = 3;
+}
+
+message CensorReplyDetail {
+    string ID = 1;
+    string json = 2;
+}
