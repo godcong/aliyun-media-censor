@@ -18,7 +18,7 @@ func NewRestServer() *RestServer {
 	return &RestServer{
 		Engine: eng,
 		Server: &http.Server{
-			Addr:    ":7788",
+			Addr:    ":7787",
 			Handler: eng,
 		},
 	}

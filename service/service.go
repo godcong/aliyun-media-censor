@@ -1,11 +1,5 @@
 package service
 
-import (
-	"github.com/gin-gonic/gin"
-	"log"
-	"net/http"
-)
-
 // service ...
 // service ...
 type service struct {
@@ -16,34 +10,21 @@ type service struct {
 var server *service
 
 func init() {
-	server = defaultEngine()
+	server = &service{
+		grpc: NewGRPCServer(),
+		rest: NewRestServer(),
+	}
+
 }
 
 // Start ...
 func Start() {
-	Router(server.Engine)
-
-	go func() {
-		log.Printf("[GIN-debug] Listening and serving HTTP on %s\n", server.Server.Addr)
-		if err := server.Server.ListenAndServe(); err != nil {
-			log.Printf("Httpserver: ListenAndServe() error: %s", err)
-		}
-	}()
-
+	server.rest.Start()
+	server.grpc.Start()
 }
 
 // Stop ...
-func Stop() error {
-	return server.Server.Shutdown(nil)
-}
-
-func defaultEngine() *service {
-	eng := gin.Default()
-	return &service{
-		Engine: eng,
-		Server: &http.Server{
-			Addr:    ":7789",
-			Handler: eng,
-		},
-	}
+func Stop() {
+	server.rest.Stop()
+	server.grpc.Stop()
 }
