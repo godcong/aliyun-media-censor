@@ -12,7 +12,9 @@ service CensorService {
 }
 
 message ValidateRequest {
-    string objectKey = 1;
+    string ID = 1;
+    string objectKey = 2;
+    string type = 3;
 }
 
 message RemoteDownloadRequest {
