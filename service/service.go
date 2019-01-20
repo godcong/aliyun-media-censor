@@ -7,9 +7,10 @@ import (
 )
 
 // service ...
+// service ...
 type service struct {
-	*gin.Engine
-	Server *http.Server
+	grpc *GRPCServer
+	rest *RestServer
 }
 
 var server *service
