@@ -17,10 +17,6 @@ message ValidateRequest {
     string type = 3;
 }
 
-message RemoteDownloadRequest {
-    string objectKey = 1;
-    string backHost = 4;
-}
 
 message CensorReply {
     int32 code = 1;
