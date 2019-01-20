@@ -14,7 +14,6 @@ func init() {
 		grpc: NewGRPCServer(),
 		rest: NewRestServer(),
 	}
-
 }
 
 // Start ...
