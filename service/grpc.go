@@ -41,8 +41,8 @@ func Result(detail *proto.CensorReplyDetail) *proto.CensorReply {
 func NewGRPCServer() *GRPCServer {
 	return &GRPCServer{
 		Type: DefaultString(config.GRPC.Type, Type),
-		Port: DefaultString(config.GRPC.Port, ":7782"),
-		Path: DefaultString(config.GRPC.Path, "/tmp/node.sock"),
+		Port: DefaultString(config.GRPC.Port, ":7786"),
+		Path: DefaultString(config.GRPC.Path, "/tmp/censor.sock"),
 	}
 }
 
@@ -69,7 +69,7 @@ func (s *GRPCServer) Start() {
 			panic(fmt.Sprintf("failed to listen: %v", err))
 		}
 
-		proto.RegisterNodeServiceServer(s.server, s)
+		proto.RegisterCensorServiceServer(s.server, s)
 		// Register reflection service on gRPC server.
 		reflection.Register(s.server)
 		log.Printf("Listening and serving TCP on %s\n", port)
