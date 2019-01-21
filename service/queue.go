@@ -111,13 +111,12 @@ func validating(ch chan<- string, info *QueueInfo) {
 
 	sta, end := 0, 64
 	for i := 0; i < int(steps); i++ {
-		sta = i * 64
-		end = sta + 64
 		if end > fileLen {
 			end = fileLen
 		}
 		go green.ProcessFrame(rd, files[sta:end], i*64+64, info.FileDest, info.ObjectKey)
-
+		sta = i * 64
+		end = sta + 64
 	}
 
 	var rds []*green.ResultData
