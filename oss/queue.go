@@ -12,10 +12,9 @@ const DefaultSleepTime = 5 * time.Second
 
 // QueueInfo ...
 type QueueInfo struct {
-	ObjectKey    string
-	CallbackURL  string
-	RequestKey   string
-	CallbackFunc func(chan<- string, *QueueInfo) `json:"-"`
+	ObjectKey     string
+	RequestKey    string
+	ProcessMethod string
 }
 
 // Queue ...

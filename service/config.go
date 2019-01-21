@@ -49,10 +49,24 @@ type REST struct {
 
 // Queue ...
 type Queue struct {
-	Type     string `json:"type"`
-	HostPort string `json:"host_port"`
-	Password string `json:"password"`
-	DB       int    `json:"db"`
+	Type     string `toml:"type"`
+	HostPort string `toml:"host_port"`
+	Password string `toml:"password"`
+	DB       int    `toml:"db"`
+}
+
+// DownloadInfo ...
+type DownloadInfo struct {
+	DirPath  string `toml:"dir_path"`
+	PartSize int64  `toml:"part_size"`
+}
+
+// OSS ...
+type OSS struct {
+	Endpoint        string `toml:"endpoint"`
+	AccessKeyID     string `toml:"access_key_id"`
+	AccessKeySecret string `toml:"access_key_secret"`
+	BucketName      string `toml:"bucket_name"`
 }
 
 // Configure ...

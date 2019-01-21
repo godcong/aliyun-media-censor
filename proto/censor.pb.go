@@ -23,6 +23,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
+// ValidateRequest ...
 type ValidateRequest struct {
 	ID                   string   `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	ObjectKey            string   `protobuf:"bytes,2,opt,name=objectKey,proto3" json:"objectKey,omitempty"`
@@ -32,30 +33,48 @@ type ValidateRequest struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ValidateRequest) Reset()         { *m = ValidateRequest{} }
+// Reset ...
+func (m *ValidateRequest) Reset() { *m = ValidateRequest{} }
+
+// String ...
 func (m *ValidateRequest) String() string { return proto.CompactTextString(m) }
-func (*ValidateRequest) ProtoMessage()    {}
+
+// ProtoMessage ...
+func (*ValidateRequest) ProtoMessage() {}
+
+// Descriptor ...
 func (*ValidateRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_censor_98a352b96bdfb29a, []int{0}
 }
+
+// XXX_Unmarshal ...
 func (m *ValidateRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_ValidateRequest.Unmarshal(m, b)
 }
+
+// XXX_Marshal ...
 func (m *ValidateRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_ValidateRequest.Marshal(b, m, deterministic)
 }
+
+// XXX_Merge ...
 func (dst *ValidateRequest) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_ValidateRequest.Merge(dst, src)
 }
+
+// XXX_Size ...
 func (m *ValidateRequest) XXX_Size() int {
 	return xxx_messageInfo_ValidateRequest.Size(m)
 }
+
+// XXX_DiscardUnknown ...
 func (m *ValidateRequest) XXX_DiscardUnknown() {
 	xxx_messageInfo_ValidateRequest.DiscardUnknown(m)
 }
 
 var xxx_messageInfo_ValidateRequest proto.InternalMessageInfo
 
+// GetID ...
 func (m *ValidateRequest) GetID() string {
 	if m != nil {
 		return m.ID
@@ -63,6 +82,7 @@ func (m *ValidateRequest) GetID() string {
 	return ""
 }
 
+// GetObjectKey ...
 func (m *ValidateRequest) GetObjectKey() string {
 	if m != nil {
 		return m.ObjectKey
@@ -70,6 +90,7 @@ func (m *ValidateRequest) GetObjectKey() string {
 	return ""
 }
 
+// GetType ...
 func (m *ValidateRequest) GetType() string {
 	if m != nil {
 		return m.Type
@@ -77,6 +98,7 @@ func (m *ValidateRequest) GetType() string {
 	return ""
 }
 
+// CensorReply ...
 type CensorReply struct {
 	Code                 int32              `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
 	Message              string             `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
@@ -86,30 +108,48 @@ type CensorReply struct {
 	XXX_sizecache        int32              `json:"-"`
 }
 
-func (m *CensorReply) Reset()         { *m = CensorReply{} }
+// Reset ...
+func (m *CensorReply) Reset() { *m = CensorReply{} }
+
+// String ...
 func (m *CensorReply) String() string { return proto.CompactTextString(m) }
-func (*CensorReply) ProtoMessage()    {}
+
+// ProtoMessage ...
+func (*CensorReply) ProtoMessage() {}
+
+// Descriptor ...
 func (*CensorReply) Descriptor() ([]byte, []int) {
 	return fileDescriptor_censor_98a352b96bdfb29a, []int{1}
 }
+
+// XXX_Unmarshal ...
 func (m *CensorReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CensorReply.Unmarshal(m, b)
 }
+
+// XXX_Marshal ...
 func (m *CensorReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_CensorReply.Marshal(b, m, deterministic)
 }
+
+// XXX_Merge ...
 func (dst *CensorReply) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_CensorReply.Merge(dst, src)
 }
+
+// XXX_Size ...
 func (m *CensorReply) XXX_Size() int {
 	return xxx_messageInfo_CensorReply.Size(m)
 }
+
+// XXX_DiscardUnknown ...
 func (m *CensorReply) XXX_DiscardUnknown() {
 	xxx_messageInfo_CensorReply.DiscardUnknown(m)
 }
 
 var xxx_messageInfo_CensorReply proto.InternalMessageInfo
 
+// GetCode ...
 func (m *CensorReply) GetCode() int32 {
 	if m != nil {
 		return m.Code
@@ -117,6 +157,7 @@ func (m *CensorReply) GetCode() int32 {
 	return 0
 }
 
+// GetMessage ...
 func (m *CensorReply) GetMessage() string {
 	if m != nil {
 		return m.Message
@@ -124,6 +165,7 @@ func (m *CensorReply) GetMessage() string {
 	return ""
 }
 
+// GetDetail ...
 func (m *CensorReply) GetDetail() *CensorReplyDetail {
 	if m != nil {
 		return m.Detail
@@ -131,6 +173,7 @@ func (m *CensorReply) GetDetail() *CensorReplyDetail {
 	return nil
 }
 
+// CensorReplyDetail ...
 type CensorReplyDetail struct {
 	ID                   string   `protobuf:"bytes,1,opt,name=ID,proto3" json:"ID,omitempty"`
 	Json                 string   `protobuf:"bytes,2,opt,name=json,proto3" json:"json,omitempty"`
@@ -139,30 +182,48 @@ type CensorReplyDetail struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *CensorReplyDetail) Reset()         { *m = CensorReplyDetail{} }
+// Reset ...
+func (m *CensorReplyDetail) Reset() { *m = CensorReplyDetail{} }
+
+// String ...
 func (m *CensorReplyDetail) String() string { return proto.CompactTextString(m) }
-func (*CensorReplyDetail) ProtoMessage()    {}
+
+// ProtoMessage ...
+func (*CensorReplyDetail) ProtoMessage() {}
+
+// Descriptor ...
 func (*CensorReplyDetail) Descriptor() ([]byte, []int) {
 	return fileDescriptor_censor_98a352b96bdfb29a, []int{2}
 }
+
+// XXX_Unmarshal ...
 func (m *CensorReplyDetail) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CensorReplyDetail.Unmarshal(m, b)
 }
+
+// XXX_Marshal ...
 func (m *CensorReplyDetail) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_CensorReplyDetail.Marshal(b, m, deterministic)
 }
+
+// XXX_Merge ...
 func (dst *CensorReplyDetail) XXX_Merge(src proto.Message) {
 	xxx_messageInfo_CensorReplyDetail.Merge(dst, src)
 }
+
+// XXX_Size ...
 func (m *CensorReplyDetail) XXX_Size() int {
 	return xxx_messageInfo_CensorReplyDetail.Size(m)
 }
+
+// XXX_DiscardUnknown ...
 func (m *CensorReplyDetail) XXX_DiscardUnknown() {
 	xxx_messageInfo_CensorReplyDetail.DiscardUnknown(m)
 }
 
 var xxx_messageInfo_CensorReplyDetail proto.InternalMessageInfo
 
+// GetID ...
 func (m *CensorReplyDetail) GetID() string {
 	if m != nil {
 		return m.ID
@@ -170,6 +231,7 @@ func (m *CensorReplyDetail) GetID() string {
 	return ""
 }
 
+// GetJson ...
 func (m *CensorReplyDetail) GetJson() string {
 	if m != nil {
 		return m.Json
@@ -202,10 +264,12 @@ type censorServiceClient struct {
 	cc *grpc.ClientConn
 }
 
+// NewCensorServiceClient ...
 func NewCensorServiceClient(cc *grpc.ClientConn) CensorServiceClient {
 	return &censorServiceClient{cc}
 }
 
+// Validate ...
 func (c *censorServiceClient) Validate(ctx context.Context, in *ValidateRequest, opts ...grpc.CallOption) (*CensorReply, error) {
 	out := new(CensorReply)
 	err := c.cc.Invoke(ctx, "/proto.CensorService/Validate", in, out, opts...)
@@ -220,6 +284,7 @@ type CensorServiceServer interface {
 	Validate(context.Context, *ValidateRequest) (*CensorReply, error)
 }
 
+// RegisterCensorServiceServer ...
 func RegisterCensorServiceServer(s *grpc.Server, srv CensorServiceServer) {
 	s.RegisterService(&_CensorService_serviceDesc, srv)
 }

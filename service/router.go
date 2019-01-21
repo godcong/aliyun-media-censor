@@ -174,8 +174,9 @@ func Router(eng *gin.Engine) {
 		qi := oss.QueueInfo{
 			ObjectKey: ctx.PostForm("name"),
 			//CallbackURL:  ctx.PostForm("url"),
-			RequestKey:   ctx.PostForm("request_key"),
-			CallbackFunc: green.QueueProcessJPG}
+			RequestKey:    ctx.PostForm("request_key"),
+			ProcessMethod: ctx.PostForm("process_method"),
+		}
 
 		oss.Push(&qi)
 		var rd []*green.Result
