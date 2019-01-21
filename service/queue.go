@@ -109,8 +109,15 @@ func validating(ch chan<- string, info *QueueInfo) {
 
 	rd := make(chan *green.ResultData, steps)
 
+	sta, end := 0, 64
 	for i := 0; i < int(steps); i++ {
-		green.ProcessFrame(rd, files, i*64+64, info.FileDest, info.ObjectKey)
+		sta = i * 64
+		end = sta + 64
+		if end > fileLen {
+			end = fileLen
+		}
+		go green.ProcessFrame(rd, files[sta:end], i*64+64, info.FileDest, info.ObjectKey)
+
 	}
 
 	var rds []*green.ResultData
