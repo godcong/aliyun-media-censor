@@ -15,17 +15,17 @@ type Config struct {
 	AccessKeyID     string
 	AccessKeySecret string
 	BucketName      string
-	downloadInfo    *DownloadInfo
+	downloadInfo    *Download
 }
 
-// OSS ...
-type OSS struct {
+// Client ...
+type Client struct {
 	Config Config
 	Bucket *oss.Bucket
 }
 
-var server1 *OSS
-var server2 *OSS
+var server1 *Client
+var server2 *Client
 
 func init() {
 	var err error
@@ -37,7 +37,7 @@ func init() {
 			AccessKeyID:     "LTAIeVGE3zRrmiNm",
 			AccessKeySecret: "F6twxkASutmcZbpPdFEqe4igtpFtu4",
 			BucketName:      "dbcache",
-			downloadInfo:    NewDownloadInfo(),
+			downloadInfo:    NewDownload(),
 		})
 		if err != nil {
 			panic(err)
@@ -48,7 +48,7 @@ func init() {
 			AccessKeyID:     "LTAIeVGE3zRrmiNm",
 			AccessKeySecret: "F6twxkASutmcZbpPdFEqe4igtpFtu4",
 			BucketName:      "dbipfs",
-			downloadInfo:    NewDownloadInfo(),
+			downloadInfo:    NewDownload(),
 		})
 
 		if err != nil {
@@ -58,25 +58,25 @@ func init() {
 	})
 }
 
-func newOSS(config Config, bucket *oss.Bucket) *OSS {
-	return &OSS{Config: config, Bucket: bucket}
+func newOSSClient(config Config, bucket *oss.Bucket) *Client {
+	return &Client{Config: config, Bucket: bucket}
 }
 
 // DownloadInfo ...
-func (c *Config) DownloadInfo() *DownloadInfo {
+func (c *Config) DownloadInfo() *Download {
 	if c.downloadInfo == nil {
-		c.downloadInfo = NewDownloadInfo()
+		c.downloadInfo = NewDownload()
 	}
 	return c.downloadInfo
 }
 
 // SetDownloadInfo ...
-func (c *Config) SetDownloadInfo(downloadInfo *DownloadInfo) {
+func (c *Config) SetDownloadInfo(downloadInfo *Download) {
 	c.downloadInfo = downloadInfo
 }
 
-// DownloadInfo ...
-type DownloadInfo struct {
+// Download ...
+type Download struct {
 	DirPath    string
 	PartSize   int64
 	Routines   oss.Option
@@ -84,9 +84,9 @@ type DownloadInfo struct {
 	Progress   oss.Option
 }
 
-// NewDownloadInfo ...
-func NewDownloadInfo() *DownloadInfo {
-	return &DownloadInfo{
+// NewDownload ...
+func NewDownload() *Download {
+	return &Download{
 		DirPath:    "./download",
 		PartSize:   100 * 1024 * 1024,
 		Routines:   oss.Routines(5),
@@ -96,7 +96,7 @@ func NewDownloadInfo() *DownloadInfo {
 }
 
 // RegisterListener ...
-func (i *DownloadInfo) RegisterListener(lis Progress) {
+func (i *Download) RegisterListener(lis Progress) {
 	i.Progress = oss.Progress(lis)
 }
 

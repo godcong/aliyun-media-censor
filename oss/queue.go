@@ -17,29 +17,29 @@ type QueueInfo struct {
 	ProcessMethod string
 }
 
-// Queue ...
-type Queue struct {
+// StreamQueue ...
+type StreamQueue struct {
 	callback CallbackFunc
 	infos    []*QueueInfo
 	lock     sync.RWMutex
 }
 
 // NewStreamQueue ...
-func NewStreamQueue() *Queue {
-	return &Queue{
+func NewStreamQueue() *StreamQueue {
+	return &StreamQueue{
 		infos: []*QueueInfo{},
 	}
 }
 
 // Push ...
-func (s *Queue) Push(info *QueueInfo) {
+func (s *StreamQueue) Push(info *QueueInfo) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.infos = append(s.infos, info)
 }
 
 // Pop ...
-func (s *Queue) Pop() *QueueInfo {
+func (s *StreamQueue) Pop() *QueueInfo {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	info := s.infos[0]
@@ -49,7 +49,7 @@ func (s *Queue) Pop() *QueueInfo {
 }
 
 // Front ...
-func (s *Queue) Front() *QueueInfo {
+func (s *StreamQueue) Front() *QueueInfo {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	info := s.infos[0]
@@ -57,17 +57,17 @@ func (s *Queue) Front() *QueueInfo {
 }
 
 // IsEmpty ...
-func (s *Queue) IsEmpty() bool {
+func (s *StreamQueue) IsEmpty() bool {
 	return len(s.infos) == 0
 }
 
 // Size ...
-func (s *Queue) Size() int {
+func (s *StreamQueue) Size() int {
 	return len(s.infos)
 }
 
 // Clear ...
-func (s *Queue) Clear() {
+func (s *StreamQueue) Clear() {
 	s.infos = []*QueueInfo{}
 }
 
@@ -122,9 +122,7 @@ func StartQueue(ctx context.Context, process int) {
 			case v := <-threads:
 				println("success:", v)
 				if s := Pop(); s != nil {
-					if s.CallbackFunc != nil {
-						go s.CallbackFunc(threads, s)
-					} else if globalCallback != nil {
+					if globalCallback != nil {
 						go globalCallback(threads, s)
 					} else {
 

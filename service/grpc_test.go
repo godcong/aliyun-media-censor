@@ -32,7 +32,7 @@ func TestGRPCBack_Callback(t *testing.T) {
 	go func() {
 		time.Sleep(5 * time.Second)
 		key := "origin/5c35cc6b5ec8a925a4143001/e84976d3567f339635eb0d49cccae72c/0050.mp4"
-		stream := NewStreamerWithConfig(Config(), key)
+		stream := NewStreamerWithConfig(OSSConfig(), key)
 		//stream.Dir, stream.FileName = filepath.Split(key)
 		stream.ObjectKey = key
 		stream.SetEncrypt(false)
