@@ -11,10 +11,16 @@ service CensorService {
     }
 }
 
+enum CensorValidateType {
+    JPG = 0;
+    Frame = 1;
+    Video = 2;
+}
+
 message ValidateRequest {
     string ID = 1;
     string objectKey = 2;
-    string type = 3;
+    CensorValidateType validateType = 3;
 }
 
 
