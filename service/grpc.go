@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/godcong/aliyun-media-censor/config"
 	"github.com/godcong/aliyun-media-censor/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -13,10 +14,11 @@ import (
 
 // GRPCServer ...
 type GRPCServer struct {
+	config *config.Configure
+	server *grpc.Server
 	Type   string
 	Port   string
 	Path   string
-	server *grpc.Server
 }
 
 // Validate ...
@@ -39,17 +41,17 @@ func Result(detail *proto.CensorReplyDetail) *proto.CensorReply {
 }
 
 // NewGRPCServer ...
-func NewGRPCServer() *GRPCServer {
+func NewGRPCServer(cfg *config.Configure) *GRPCServer {
 	return &GRPCServer{
-		Type: DefaultString(config.GRPC.Type, Type),
-		Port: DefaultString(config.GRPC.Port, ":7786"),
-		Path: DefaultString(config.GRPC.Path, "/tmp/censor.sock"),
+		Type: config.DefaultString(cfg.GRPC.Type, Type),
+		Port: config.DefaultString(cfg.GRPC.Port, ":7786"),
+		Path: config.DefaultString(cfg.GRPC.Path, "/tmp/censor.sock"),
 	}
 }
 
 // Start ...
 func (s *GRPCServer) Start() {
-	if !config.GRPC.Enable {
+	if !s.config.GRPC.Enable {
 		return
 	}
 	s.server = grpc.NewServer()

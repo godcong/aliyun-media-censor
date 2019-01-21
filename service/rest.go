@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/godcong/aliyun-media-censor/config"
 	"log"
 	"net/http"
 )
@@ -9,28 +10,36 @@ import (
 // RestServer ...
 type RestServer struct {
 	*gin.Engine
-	Server *http.Server
+	config *config.Configure
+	server *http.Server
+	Port   string
 }
 
 // NewRestServer ...
-func NewRestServer() *RestServer {
-	eng := gin.Default()
-	return &RestServer{
-		Engine: eng,
-		Server: &http.Server{
-			Addr:    ":7787",
-			Handler: eng,
-		},
+func NewRestServer(cfg *config.Configure) *RestServer {
+	s := &RestServer{
+		Engine: gin.Default(),
+		config: cfg,
+		Port:   config.DefaultString(cfg.REST.Port, ":7787"),
 	}
+	return s
 }
 
 // Start ...
 func (s *RestServer) Start() {
+	if !s.config.REST.Enable {
+		return
+	}
+
 	Router(s.Engine)
 
+	s.server = &http.Server{
+		Addr:    s.Port,
+		Handler: s.Engine,
+	}
 	go func() {
-		log.Printf("[GIN-debug] Listening and serving HTTP on %s\n", s.Server.Addr)
-		if err := s.Server.ListenAndServe(); err != nil {
+		log.Printf("Listening and serving HTTP on %s\n", s.Port)
+		if err := s.server.ListenAndServe(); err != nil {
 			log.Printf("Httpserver: ListenAndServe() error: %s", err)
 		}
 	}()
@@ -38,6 +47,8 @@ func (s *RestServer) Start() {
 }
 
 // Stop ...
-func (s *RestServer) Stop() error {
-	return s.Server.Shutdown(nil)
+func (s *RestServer) Stop() {
+	if err := s.server.Shutdown(nil); err != nil {
+		panic(err) // failure/timeout shutting down the server gracefully
+	}
 }

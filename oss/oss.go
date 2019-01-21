@@ -3,80 +3,98 @@ package oss
 import (
 	"fmt"
 	"github.com/aliyun/aliyun-oss-go-sdk/oss"
+	"github.com/godcong/aliyun-media-censor/config"
+
 	"log"
 	"os"
 	"path/filepath"
-	"sync"
 )
 
-// Config ...
-type Config struct {
+// OSS ...
+type OSS struct {
 	Endpoint        string
 	AccessKeyID     string
 	AccessKeySecret string
 	BucketName      string
-	downloadInfo    *Download
+	*oss.Bucket
 }
 
-// Client ...
-type Client struct {
-	Config Config
-	Bucket *oss.Bucket
+// BucketServer ...
+type BucketServer struct {
+	server []*OSS
+	info   *DownloadInfo
 }
 
-var server1 *Client
-var server2 *Client
+var server *BucketServer
 
-func init() {
-	var err error
-	once := sync.Once{}
-	once.Do(func() {
-		//TODO: server init
-		server1, err = NewOSS(Config{
-			Endpoint:        "https://oss-cn-shanghai.aliyuncs.com",
-			AccessKeyID:     "LTAIeVGE3zRrmiNm",
-			AccessKeySecret: "F6twxkASutmcZbpPdFEqe4igtpFtu4",
-			BucketName:      "dbcache",
-			downloadInfo:    NewDownload(),
-		})
+// NewOSS ...
+func NewOSS(oss *config.OSS) *OSS {
+	return &OSS{
+		Endpoint:        config.DefaultString(oss.Endpoint, ""),
+		AccessKeyID:     config.DefaultString(oss.AccessKeyID, ""),
+		AccessKeySecret: config.DefaultString(oss.AccessKeySecret, ""),
+		BucketName:      config.DefaultString(oss.BucketName, ""),
+	}
+}
+
+// Connect ...
+func (o *OSS) Connect() error {
+	client, err := oss.New(o.Endpoint, o.AccessKeyID, o.AccessKeySecret)
+	if err != nil {
+		return fmt.Errorf("failed to create new client: %s", err)
+	}
+
+	bucket, err := client.Bucket(o.BucketName)
+	if err != nil {
+		return fmt.Errorf("failed to get bucket: %s", err)
+	}
+	o.Bucket = bucket
+	return nil
+}
+
+// NewBucketServer ...
+func NewBucketServer(cfg *config.Configure) *BucketServer {
+	var s BucketServer
+	for _, val := range cfg.OSS {
+		oss := NewOSS(&val)
+		err := oss.Connect()
 		if err != nil {
+			log.Println(err)
 			panic(err)
 		}
-
-		server2, err = NewOSS(Config{
-			Endpoint:        "https://oss-cn-shanghai.aliyuncs.com",
-			AccessKeyID:     "LTAIeVGE3zRrmiNm",
-			AccessKeySecret: "F6twxkASutmcZbpPdFEqe4igtpFtu4",
-			BucketName:      "dbipfs",
-			downloadInfo:    NewDownload(),
-		})
-
-		if err != nil {
-			panic(err)
-		}
-
-	})
+		s.server = append(s.server, oss)
+	}
+	return &s
 }
 
-func newOSSClient(config Config, bucket *oss.Bucket) *Client {
-	return &Client{Config: config, Bucket: bucket}
+// InitOSS ...
+func InitOSS(cfg *config.Configure) {
+	server = NewBucketServer(cfg)
+}
+
+// Server ...
+func (s *BucketServer) Server(idx ...int) *OSS {
+	if idx == nil {
+		return s.server[0]
+	}
+	return s.server[idx[0]]
+}
+
+// Info ...
+func (s *BucketServer) Info() *DownloadInfo {
+	if s.info == nil {
+		s.info = NewDownloadInfo()
+	}
+	return s.info
+}
+
+// SetInfo ...
+func (s *BucketServer) SetInfo(info *DownloadInfo) {
+	s.info = info
 }
 
 // DownloadInfo ...
-func (c *Config) DownloadInfo() *Download {
-	if c.downloadInfo == nil {
-		c.downloadInfo = NewDownload()
-	}
-	return c.downloadInfo
-}
-
-// SetDownloadInfo ...
-func (c *Config) SetDownloadInfo(downloadInfo *Download) {
-	c.downloadInfo = downloadInfo
-}
-
-// Download ...
-type Download struct {
+type DownloadInfo struct {
 	DirPath    string
 	PartSize   int64
 	Routines   oss.Option
@@ -84,9 +102,9 @@ type Download struct {
 	Progress   oss.Option
 }
 
-// NewDownload ...
-func NewDownload() *Download {
-	return &Download{
+// NewDownloadInfo ...
+func NewDownloadInfo() *DownloadInfo {
+	return &DownloadInfo{
 		DirPath:    "./download",
 		PartSize:   100 * 1024 * 1024,
 		Routines:   oss.Routines(5),
@@ -96,7 +114,7 @@ func NewDownload() *Download {
 }
 
 // RegisterListener ...
-func (i *Download) RegisterListener(lis Progress) {
+func (i *DownloadInfo) RegisterListener(lis Progress) {
 	i.Progress = oss.Progress(lis)
 }
 
@@ -165,35 +183,21 @@ func (p *progress) ProgressChanged(event *oss.ProgressEvent) {
 	}
 }
 
-// NewOSS ...
-func NewOSS(config Config) (*OSS, error) {
-	client, err := oss.New(config.Endpoint, config.AccessKeyID, config.AccessKeySecret)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new client: %s", err)
-	}
-
-	bucket, err := client.Bucket(config.BucketName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get bucket: %s", err)
-	}
-	return newOSS(config, bucket), nil
-}
-
 // Download ...
-func (o *OSS) Download(p Progress) error {
-	di := o.Config.DownloadInfo()
+func (s *BucketServer) Download(p Progress, fileName string) error {
+	di := s.Info()
 	path := di.DirPath
 	if p.Path() != "" {
 		path = p.Path()
 	}
-	fp := filepath.Join(path, p.ObjectKey())
+	fp := filepath.Join(path, fileName)
 	dir, _ := filepath.Split(fp)
 	err := os.MkdirAll(dir, os.ModePerm)
 	if err != nil {
-		//ignore error
 		log.Println(err)
+		//ignore error
 	}
-	err = o.Bucket.DownloadFile(p.ObjectKey(), fp, di.PartSize, di.Routines, p.Option(), di.Checkpoint)
+	err = s.Server().DownloadFile(p.ObjectKey(), fp, di.PartSize, di.Routines, p.Option(), di.Checkpoint)
 	if err != nil {
 		return err
 	}
@@ -201,14 +205,14 @@ func (o *OSS) Download(p Progress) error {
 }
 
 // Upload ...
-func (o *OSS) Upload(p Progress) error {
-	di := o.Config.DownloadInfo()
+func (s *BucketServer) Upload(p Progress) error {
+	di := s.Info()
 	path := di.DirPath
 	if p.Path() != "" {
 		path = p.Path()
 	}
 	fp := filepath.Join(path, p.ObjectKey())
-	err := o.Bucket.UploadFile(p.ObjectKey(), fp, di.PartSize, di.Routines, p.Option(), di.Checkpoint)
+	err := s.Server().UploadFile(p.ObjectKey(), fp, di.PartSize, di.Routines, p.Option(), di.Checkpoint)
 	if err != nil {
 		return err
 	}
@@ -216,8 +220,8 @@ func (o *OSS) Upload(p Progress) error {
 }
 
 // URL ...
-func (o *OSS) URL(p Progress) (string, error) {
-	signedURL, err := o.Bucket.SignURL(p.ObjectKey(), oss.HTTPGet, 60*60*24)
+func (s *BucketServer) URL(p Progress) (string, error) {
+	signedURL, err := s.Server().SignURL(p.ObjectKey(), oss.HTTPGet, 60*60*24)
 	if err != nil {
 		return "", err
 	}
@@ -235,17 +239,7 @@ func (o *OSS) IsExist(p Progress) bool {
 	return exist
 }
 
-// Server1 ...
-func Server1() *OSS {
-	return server1
-}
-
-// Server2 ...
-func Server2() *OSS {
-	return server2
-}
-
-// Server3 ...
-func Server3() {
-
+// Server ...
+func Server() *BucketServer {
+	return server
 }

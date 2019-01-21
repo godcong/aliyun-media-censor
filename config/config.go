@@ -1,4 +1,4 @@
-package service
+package config
 
 import (
 	"github.com/pelletier/go-toml"
@@ -76,6 +76,7 @@ type Configure struct {
 	GRPC  GRPC  `toml:"grpc"`
 	REST  REST  `toml:"rest"`
 	IPFS  IPFS  `toml:"ipfs"`
+	OSS   []OSS `toml:"oss"`
 
 	Callback Callback `toml:"callback"`
 }
