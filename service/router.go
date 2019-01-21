@@ -31,19 +31,18 @@ func Router(eng *gin.Engine) {
 		p := oss.NewProgress()
 
 		key := ctx.PostForm("objectKey")
-		name := uuid.NewV1().String()
 		p.SetObjectKey(key)
 		if !server.IsExist(p) {
 			failed(ctx, "obejct key is not exist")
 			return
 		}
-		err := server.Download(p, name)
+		err := server.Download(p)
 		if err != nil {
 			log.Println(err)
 			failed(ctx, err.Error())
 			return
 		}
-		success(ctx, name)
+		success(ctx, key)
 	})
 
 	g0.GET("list/:path", func(ctx *gin.Context) {

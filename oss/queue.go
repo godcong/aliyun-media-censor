@@ -15,6 +15,7 @@ type QueueInfo struct {
 	ObjectKey     string
 	RequestKey    string
 	ProcessMethod string
+	Callback      CallbackFunc
 }
 
 // StreamQueue ...
@@ -122,6 +123,7 @@ func StartQueue(ctx context.Context, process int) {
 			case v := <-threads:
 				println("success:", v)
 				if s := Pop(); s != nil {
+
 					if globalCallback != nil {
 						go globalCallback(threads, s)
 					} else {

@@ -89,6 +89,19 @@ type ResultData struct {
 	RequestID string `json:"requestId"`
 }
 
+// Results ...
+type Results []*ResultData
+
+// ArrayedJSON ...
+func (r *Results) ArrayedJSON() []byte {
+	bytes, err := jsoniter.Marshal(r)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	return bytes
+}
+
 // ArrayedJSON ...
 func (data *ResultData) ArrayedJSON() []byte {
 	rd := []*ResultData{
