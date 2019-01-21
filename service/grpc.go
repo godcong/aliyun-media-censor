@@ -19,6 +19,7 @@ type GRPCServer struct {
 	server *grpc.Server
 }
 
+// Validate ...
 func (s *GRPCServer) Validate(context.Context, *proto.ValidateRequest) (*proto.CensorReply, error) {
 	panic("implement me")
 }

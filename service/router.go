@@ -172,8 +172,8 @@ func Router(eng *gin.Engine) {
 
 	g0.POST("validate/frame", func(ctx *gin.Context) {
 		qi := oss.QueueInfo{
-			ObjectKey:    ctx.PostForm("name"),
-			CallbackURL:  ctx.PostForm("url"),
+			ObjectKey: ctx.PostForm("name"),
+			//CallbackURL:  ctx.PostForm("url"),
 			RequestKey:   ctx.PostForm("request_key"),
 			CallbackFunc: green.QueueProcessJPG}
 
