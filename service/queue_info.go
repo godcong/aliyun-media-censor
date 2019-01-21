@@ -15,47 +15,23 @@ type QueueCallback interface {
 
 // QueueInfo ...
 type QueueInfo struct {
-	config      *config.Configure
-	encrypt     bool
-	ID          string
-	Key         string
-	ObjectKey   string
-	KeyURL      string
-	KeyName     string
-	KeyInfoName string
-	KeyDest     string
-	FileSource  string
-	FileDest    string
-	Callback    string
-}
-
-// NewQueueInfo ...
-func NewQueueInfo() *QueueInfo {
-	return &QueueInfo{
-		encrypt:     false,
-		ID:          uuid.NewV1().String(),
-		Key:         "",
-		KeyURL:      "",
-		KeyName:     "",
-		KeyInfoName: "",
-		KeyDest:     "",
-		//FileName:    util.GenerateRandomString(64),
-		FileSource: "",
-		FileDest:   "",
-	}
+	config        *config.Configure
+	ID            string
+	ObjectKey     string
+	RequestKey    string
+	ProcessMethod string
+	Callback      string
+	FileSource    string
+	FileDest      string
 }
 
 // NewStreamerWithConfig ...
 func NewStreamerWithConfig(cfg *config.Configure, id string) *QueueInfo {
 	return &QueueInfo{
-		encrypt:     false,
-		ID:          config.DefaultString(id, uuid.NewV1().String()),
-		KeyURL:      cfg.Media.KeyURL,
-		KeyName:     cfg.Media.KeyFile,
-		KeyInfoName: cfg.Media.KeyInfoFile,
-		KeyDest:     cfg.Media.KeyDest,
-		FileSource:  cfg.Media.Upload,
-		FileDest:    cfg.Media.Transfer,
+		config:     cfg,
+		ID:         config.DefaultString(id, uuid.NewV1().String()),
+		FileSource: cfg.Media.Upload,
+		FileDest:   cfg.Media.Transfer,
 	}
 }
 
@@ -63,20 +39,6 @@ func NewStreamerWithConfig(cfg *config.Configure, id string) *QueueInfo {
 func (s *QueueInfo) FileName() string {
 	_, file := filepath.Split(s.ObjectKey)
 	return file
-}
-
-// Encrypt ...
-func (s *QueueInfo) Encrypt() bool {
-	return s.encrypt
-}
-
-// SetEncrypt ...
-func (s *QueueInfo) SetEncrypt(encrypt bool) {
-	s.encrypt = true
-	s.KeyURL = s.config.Media.KeyURL
-	s.KeyName = s.config.Media.KeyFile
-	s.KeyInfoName = s.config.Media.KeyInfoFile
-	s.KeyDest = s.config.Media.KeyDest
 }
 
 // JSON ...

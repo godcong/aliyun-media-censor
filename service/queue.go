@@ -2,11 +2,16 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/godcong/aliyun-media-censor/config"
+	"github.com/godcong/aliyun-media-censor/ffmpeg"
+	"github.com/godcong/aliyun-media-censor/green"
+	"github.com/godcong/aliyun-media-censor/oss"
+	"github.com/godcong/aliyun-media-censor/util"
 	"github.com/json-iterator/go"
-	"github.com/mitchellh/mapstructure"
 	"log"
+	"math"
 	"time"
 )
 
@@ -41,8 +46,8 @@ type HandleFunc func(name, key string) error
 type QueueServer struct {
 	*redis.Client
 	config    *config.Configure
-	Processes int
 	cancel    context.CancelFunc
+	Processes int
 }
 
 var globalQueue *QueueServer
@@ -54,7 +59,7 @@ func Push(v *QueueInfo) {
 
 // Push ...
 func (s *QueueServer) Push(v *QueueInfo) {
-	s.RPush("node_queue", v.JSON())
+	s.RPush("censor_queue", v.JSON())
 }
 
 // Pop ...
@@ -64,11 +69,11 @@ func Pop() *QueueInfo {
 
 // Pop ...
 func (s *QueueServer) Pop() *QueueInfo {
-	pop := s.LPop("node_queue").Val()
+	pop := s.LPop("censor_queue").Val()
 	return ParseInfo(pop)
 }
 
-func transfer(ch chan<- string, info *QueueInfo) {
+func validating(ch chan<- string, info *QueueInfo) {
 	var err error
 	chanRes := info.FileName()
 	defer func() {
@@ -79,43 +84,47 @@ func transfer(ch chan<- string, info *QueueInfo) {
 		}
 		ch <- chanRes
 	}()
+	p := oss.NewProgress()
+	p.SetObjectKey(info.ObjectKey)
 
-	globalQueue.Set(info.ID, StatusDownloading, 0)
-	err = download(info)
+	server := oss.Server()
+	if !server.IsExist(p) {
+		err = fmt.Errorf("object [%s] is not exist", info.ObjectKey)
+		return
+	}
+	err = server.Download(p)
+	ts, err := ffmpeg.TransferJPG(info.FileSource, info.ObjectKey)
+	if err != nil {
+		return
+	}
+	log.Println(ts)
+	files, err := util.FileList(info.FileSource + info.ObjectKey)
 	if err != nil {
 		return
 	}
 
-	globalQueue.Set(info.ID, StatusTransferring, 0)
-	if info.Encrypt() {
-		_ = info.KeyFile()
-		err = toM3U8WithKey(info.ID, info.SourceFile(), info.FileDest, info.KeyInfoName)
-	} else {
-		err = toM3U8(info.ID, info.SourceFile(), info.FileDest)
+	fileLen := len(files)
+
+	steps := int(math.Ceil(float64(fileLen) / 64))
+
+	rd := make(chan *green.ResultData, steps)
+
+	for i := 0; i < int(steps); i++ {
+		green.ProcessFrame(rd, files, i*64+64, info.FileDest, info.ObjectKey)
 	}
 
-	if err != nil {
-		return
+	var rds []*green.ResultData
+
+	for i := 0; i < int(steps); i++ {
+		select {
+		case v := <-rd:
+			if v != nil {
+				rds = append(rds, v)
+			}
+		}
 	}
 
-	detail, err := commitToIPNS(info.ID, info.DestPath())
-	if err != nil {
-		return
-	}
-
-	var qr QueueResult
-
-	err = mapstructure.Decode(detail, &qr)
-	if err != nil {
-		return
-	}
-
-	log.Println(qr)
-	err = NewBack().Callback(&qr)
-
-	if err != nil {
-		return
-	}
+	log.Println(rds)
 
 }
 
@@ -139,7 +148,7 @@ func (r *QueueResult) JSON() string {
 	return s
 }
 
-func transferNothing(threads chan<- string) {
+func validateNothing(threads chan<- string) {
 	time.Sleep(3 * time.Second)
 	threads <- ""
 }
@@ -174,7 +183,7 @@ func (s *QueueServer) Start() {
 
 		for i := 0; i < s.Processes; i++ {
 			log.Println("start", i)
-			go transferNothing(threads)
+			go validateNothing(threads)
 		}
 
 		for {
@@ -185,9 +194,9 @@ func (s *QueueServer) Start() {
 				}
 
 				if s := Pop(); s != nil {
-					go transfer(threads, s)
+					go validating(threads, s)
 				} else {
-					go transferNothing(threads)
+					go validateNothing(threads)
 				}
 			case <-c.Done():
 				return

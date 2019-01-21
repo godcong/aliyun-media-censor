@@ -170,14 +170,14 @@ func Router(eng *gin.Engine) {
 	})
 
 	g0.POST("validate/frame", func(ctx *gin.Context) {
-		qi := oss.QueueInfo{
+		qi := QueueInfo{
 			ObjectKey: ctx.PostForm("name"),
 			//CallbackURL:  ctx.PostForm("url"),
 			RequestKey:    ctx.PostForm("request_key"),
 			ProcessMethod: ctx.PostForm("process_method"),
 		}
 
-		oss.Push(&qi)
+		Push(&qi)
 		var rd []*green.Result
 		success(ctx, rd)
 	})

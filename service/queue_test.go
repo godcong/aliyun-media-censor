@@ -24,20 +24,20 @@ func TestDownload(t *testing.T) {
 		KeyInfoName: "",
 		KeyDest:     "",
 		FileSource:  "upload",
-		FileDest:    "transfer",
+		FileDest:    "validating",
 	})
 	t.Log(err)
 }
 
 // TestTransfer ...
 func TestTransfer(t *testing.T) {
-	err := toM3U8("16118190-1ae9-11e9-b250-00155d33ca31", "upload/16118190-1ae9-11e9-b250-00155d33ca31/0050.mp4", "transfer")
+	err := toM3U8("16118190-1ae9-11e9-b250-00155d33ca31", "upload/16118190-1ae9-11e9-b250-00155d33ca31/0050.mp4", "validating")
 	t.Log(err)
 }
 
 // TestCommit ...
 func TestCommit(t *testing.T) {
-	detail, e := commitToIPNS("16118190-1ae9-11e9-b250-00155d33ca31", "transfer/16118190-1ae9-11e9-b250-00155d33ca31")
+	detail, e := commitToIPNS("16118190-1ae9-11e9-b250-00155d33ca31", "validating/16118190-1ae9-11e9-b250-00155d33ca31")
 	t.Log(detail, e)
 	var cr QueueResult
 	//
