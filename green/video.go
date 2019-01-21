@@ -82,7 +82,7 @@ func VideoResults(request ...string) (*ResultData, error) {
 
 // QueueProcessJPG ...
 func QueueProcessJPG(output chan<- string, info *oss.QueueInfo) {
-	server := oss.Server2()
+	server := oss.Server()
 	p := oss.NewProgress()
 	p.SetObjectKey(info.ObjectKey)
 

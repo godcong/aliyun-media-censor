@@ -27,23 +27,23 @@ func Router(eng *gin.Engine) {
 	})
 
 	g0.POST("download", func(ctx *gin.Context) {
-		server := oss.Server2()
+		server := oss.Server()
 		p := oss.NewProgress()
 
-		name := ctx.PostForm("name")
-
-		p.SetObjectKey(name)
+		key := ctx.PostForm("objectKey")
+		name := uuid.NewV1().String()
+		p.SetObjectKey(key)
 		if !server.IsExist(p) {
 			failed(ctx, "obejct key is not exist")
 			return
 		}
-		err := server.Download(p)
+		err := server.Download(p, name)
 		if err != nil {
 			log.Println(err)
 			failed(ctx, err.Error())
 			return
 		}
-		success(ctx, p.ObjectKey())
+		success(ctx, name)
 	})
 
 	g0.GET("list/:path", func(ctx *gin.Context) {
@@ -60,7 +60,7 @@ func Router(eng *gin.Engine) {
 	})
 
 	g0.GET("url", func(ctx *gin.Context) {
-		server := oss.Server2()
+		server := oss.Server()
 		key := ctx.Query("key")
 		p := oss.NewProgress()
 		p.SetObjectKey(key)
@@ -81,7 +81,7 @@ func Router(eng *gin.Engine) {
 	g0.POST("fileupload", func(ctx *gin.Context) {
 		filePath := ctx.PostForm("name")
 
-		server := oss.Server2()
+		server := oss.Server()
 		p := oss.NewProgress()
 		p.SetObjectKey(filePath)
 
@@ -107,7 +107,7 @@ func Router(eng *gin.Engine) {
 		filePath := ctx.PostForm("name")
 		tp := ctx.PostForm("type")
 
-		server := oss.Server2()
+		server := oss.Server()
 		p := oss.NewProgress()
 		var urls []string
 		files := []string{filepath.Join("./download", filePath)}
@@ -250,7 +250,7 @@ func Router(eng *gin.Engine) {
 
 // ParseValidateDo ...
 func ParseValidateDo(ctx *gin.Context, fn func(url string) (*green.ResultData, error)) ([]*green.ResultData, error) {
-	server := oss.Server2()
+	server := oss.Server()
 	p := oss.NewProgress()
 
 	tp := ctx.PostForm("type")

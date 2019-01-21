@@ -25,6 +25,7 @@ type GRPCServer struct {
 func (s *GRPCServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.CensorReply, error) {
 	switch req.ValidateType {
 	case proto.CensorValidateType_JPG:
+
 	case proto.CensorValidateType_Frame:
 	case proto.CensorValidateType_Video:
 

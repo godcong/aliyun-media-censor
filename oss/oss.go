@@ -183,14 +183,21 @@ func (p *progress) ProgressChanged(event *oss.ProgressEvent) {
 	}
 }
 
+// FileName ...
+func FileName(objectKey string) string {
+	_, file := filepath.Split(objectKey)
+	return file
+}
+
 // Download ...
-func (s *BucketServer) Download(p Progress, fileName string) error {
+func (s *BucketServer) Download(p Progress) error {
 	di := s.Info()
 	path := di.DirPath
 	if p.Path() != "" {
 		path = p.Path()
 	}
-	fp := filepath.Join(path, fileName)
+
+	fp := filepath.Join(path, FileName(p.ObjectKey()))
 	dir, _ := filepath.Split(fp)
 	err := os.MkdirAll(dir, os.ModePerm)
 	if err != nil {
@@ -230,8 +237,8 @@ func (s *BucketServer) URL(p Progress) (string, error) {
 }
 
 // IsExist ...
-func (o *OSS) IsExist(p Progress) bool {
-	exist, err := o.Bucket.IsObjectExist(p.ObjectKey())
+func (s *BucketServer) IsExist(p Progress) bool {
+	exist, err := s.Server().IsObjectExist(p.ObjectKey())
 	if err != nil {
 		log.Println(err)
 		return false
