@@ -81,8 +81,13 @@ func (s *GRPCServer) Validate(ctx context.Context, req *proto.ValidateRequest) (
 }
 
 type grpcBack struct {
+	config   *config.Configure
 	BackType string
 	BackAddr string
+}
+
+func (b *grpcBack) Callback(*QueueResult) error {
+	panic("implement me")
 }
 
 // Result ...
@@ -182,5 +187,14 @@ func NewManagerGRPC(cfg *config.Configure) *GRPCClient {
 		Type:   config.DefaultString("unix", Type),
 		Port:   config.DefaultString("", ":7781"),
 		Addr:   config.DefaultString("", "/tmp/manager.sock"),
+	}
+}
+
+// NewGRPCBack ...
+func NewGRPCBack(cfg *config.Configure) QueueCallback {
+	return &grpcBack{
+		config:   cfg,
+		BackType: config.DefaultString(cfg.Callback.BackType, "tcp"),
+		BackAddr: config.DefaultString(cfg.Callback.BackAddr, "localhost:7781"),
 	}
 }

@@ -15,6 +15,25 @@ type RestServer struct {
 	Port   string
 }
 
+type restBack struct {
+	config  *config.Configure
+	BackURL string
+	Version string
+}
+
+func (b *restBack) Callback(*QueueResult) error {
+	panic("implement me")
+}
+
+// NewRestBack ...
+func NewRestBack(cfg *config.Configure) QueueCallback {
+	return &restBack{
+		config:  cfg,
+		BackURL: config.DefaultString(cfg.Callback.BackAddr, "localhost:7780"),
+		Version: config.DefaultString(cfg.Callback.Version, "v0"),
+	}
+}
+
 // NewRestServer ...
 func NewRestServer(cfg *config.Configure) *RestServer {
 	s := &RestServer{

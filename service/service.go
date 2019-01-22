@@ -42,3 +42,12 @@ func Stop() {
 	server.grpc.Stop()
 	server.queue.Stop()
 }
+
+// NewBack ...
+func NewBack() StreamerCallback {
+	cfg := config.Config()
+	if cfg != nil && cfg.Callback.Type == "grpc" {
+		return NewGRPCBack(cfg)
+	}
+	return NewRestBack(cfg)
+}

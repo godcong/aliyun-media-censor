@@ -13,3 +13,8 @@
    access_key_id=""
    access_key_secret =""
    bucket_name =""
+
+[callback]
+       type = "grpc"
+       back_type = "unix"
+       back_addr ="/tmp/manager.sock"
