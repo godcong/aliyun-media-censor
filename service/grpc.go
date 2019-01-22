@@ -7,6 +7,7 @@ import (
 	"github.com/godcong/aliyun-media-censor/green"
 	"github.com/godcong/aliyun-media-censor/proto"
 	"github.com/json-iterator/go"
+	"github.com/satori/go.uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"log"
@@ -27,20 +28,43 @@ type GRPCServer struct {
 func (s *GRPCServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.CensorReply, error) {
 	var rd []*green.Result
 
+	qi := QueueInfo{
+		ObjectKey:    req.ObjectKey,
+		ID:           req.ID,
+		ValidateType: req.ValidateType.String(),
+	}
+	var data []*green.ResultData
+	var err error
 	switch req.ValidateType {
-	case proto.CensorValidateType_JPG:
-
 	case proto.CensorValidateType_Frame:
-		qi := QueueInfo{
-			ObjectKey:     req.ObjectKey,
-			RequestKey:    req.ID,
-			ProcessMethod: req.ValidateType.String(),
-		}
-
 		Push(&qi)
-
+		data = []*green.ResultData{}
+	case proto.CensorValidateType_JPG:
+		data, err = ParseValidateDo(&qi, func(url string) (data *green.ResultData, e error) {
+			return green.ImageSyncScan(&green.BizData{
+				Scenes: []string{"porn", "terrorism", "ad", "live", "sface"},
+				Tasks: []green.Task{
+					{
+						DataID: uuid.NewV1().String(),
+						URL:    url,
+					},
+				},
+			})
+		})
 	case proto.CensorValidateType_Video:
-
+		data, err = ParseValidateDo(&qi, func(url string) (data *green.ResultData, e error) {
+			return green.VideoAsyncScan(&green.BizData{
+				Scenes:      []string{"porn", "terrorism", "ad", "live", "sface"},
+				AudioScenes: []string{"antispam"},
+				Tasks: []green.Task{
+					{
+						DataID:    uuid.NewV1().String(),
+						URL:       url,
+						Interval:  30,
+						MaxFrames: 200,
+					},
+				}})
+		})
 	}
 
 	m, _ := jsoniter.MarshalToString(rd)

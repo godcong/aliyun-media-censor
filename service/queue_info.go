@@ -18,7 +18,7 @@ type QueueInfo struct {
 	config        *config.Configure
 	ID            string
 	ObjectKey     string
-	RequestKey    string
+	ValidateType  string
 	ProcessMethod string
 	Callback      string
 	FileSource    string

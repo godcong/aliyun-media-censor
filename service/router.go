@@ -1,13 +1,11 @@
 package service
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/godcong/aliyun-media-censor/ffmpeg"
 	"github.com/godcong/aliyun-media-censor/green"
 	"github.com/godcong/aliyun-media-censor/oss"
 	"github.com/godcong/aliyun-media-censor/util"
-	"github.com/satori/go.uuid"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -168,39 +166,14 @@ func Router(eng *gin.Engine) {
 
 		success(ctx, urls)
 	})
+	g0.POST("validate", ValidatePOST(verV0))
 
 	g0.POST("validate/frame", func(ctx *gin.Context) {
-		qi := QueueInfo{
-			ObjectKey: ctx.PostForm("name"),
-			//CallbackURL:  ctx.PostForm("url"),
-			RequestKey:    ctx.PostForm("request_key"),
-			ProcessMethod: ctx.PostForm("process_method"),
-		}
-
-		Push(&qi)
-		var rd []*green.Result
-		success(ctx, rd)
+		failed(ctx, "please use /validate")
 	})
 
 	g0.POST("validate/pic", func(ctx *gin.Context) {
-		data, err := ParseValidateDo(ctx, func(url string) (data *green.ResultData, e error) {
-			return green.ImageSyncScan(&green.BizData{
-				Scenes: []string{"porn", "terrorism", "ad", "live", "sface"},
-				Tasks: []green.Task{
-					{
-						DataID: uuid.NewV1().String(),
-						URL:    url,
-					},
-				},
-			})
-		})
-
-		if err != nil {
-			failed(ctx, err.Error())
-		}
-
-		success(ctx, data)
-
+		failed(ctx, "please use /validate")
 	})
 
 	g0.GET("status/pic", func(ctx *gin.Context) {
@@ -214,72 +187,22 @@ func Router(eng *gin.Engine) {
 	})
 
 	g0.POST("validate/video", func(ctx *gin.Context) {
-		data, err := ParseValidateDo(ctx, func(url string) (data *green.ResultData, e error) {
-			return green.VideoAsyncScan(&green.BizData{
-				Scenes:      []string{"porn", "terrorism", "ad", "live", "sface"},
-				AudioScenes: []string{"antispam"},
-				Tasks: []green.Task{
-					{
-						DataID:    uuid.NewV1().String(),
-						URL:       url,
-						Interval:  30,
-						MaxFrames: 200,
-					},
-				}})
-		})
-
-		if err != nil {
-			failed(ctx, err.Error())
-			return
-		}
-		success(ctx, data)
+		failed(ctx, "please use /validate")
 	})
 
-	g0.GET("status/video", func(ctx *gin.Context) {
+	g0.GET("status", func(ctx *gin.Context) {
 		id := ctx.QueryArray("id")
-		data, err := green.VideoResults(id...)
-		if err != nil {
-			failed(ctx, err.Error())
-			return
+		tp := ctx.Query("type")
+
+		if tp == "video" {
+			data, err := green.VideoResults(id...)
+			if err != nil {
+				failed(ctx, err.Error())
+				return
+			}
+			success(ctx, data)
 		}
-		success(ctx, data)
+
 	})
 
-}
-
-// ParseValidateDo ...
-func ParseValidateDo(ctx *gin.Context, fn func(url string) (*green.ResultData, error)) ([]*green.ResultData, error) {
-	server := oss.Server()
-	p := oss.NewProgress()
-
-	tp := ctx.PostForm("type")
-	names := ctx.PostFormArray("names")
-	name := ctx.PostForm("name")
-
-	if tp != "list" {
-		names = []string{name}
-	}
-
-	var dataList []*green.ResultData
-
-	for _, name := range names {
-		p.SetObjectKey(name)
-
-		if !server.IsExist(p) {
-			return nil, errors.New("obejct key is not exist")
-		}
-
-		u, err := server.URL(p)
-		if err != nil {
-			return nil, err
-		}
-
-		resultData, err := fn(u)
-
-		if err != nil {
-			return nil, err
-		}
-		dataList = append(dataList, resultData)
-	}
-	return dataList, nil
 }
