@@ -1,0 +1,16 @@
+[media]
+    download = "download"
+    upload= "upload"
+    transfer= "censor"
+[grpc]
+    enable = true
+    port = ":7781"
+    path = "/tmp/node.sock"
+[rest]
+    enable = true
+
+[[oss]]
+   endpoint ="https://oss-cn-shanghai.aliyuncs.com"
+   access_key_id=""
+   access_key_secret =""
+   bucket_name =""

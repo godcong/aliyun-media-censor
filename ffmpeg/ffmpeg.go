@@ -171,11 +171,11 @@ func TransferSplit(path string, src string) (string, error) {
 }
 
 // TransferJPG ...
-func TransferJPG(path string, src string) (string, error) {
+func TransferJPG(src string, dest string) (string, error) {
 	_ = os.MkdirAll("transferred/"+src, os.ModePerm)
-	return Run("-i", path+src,
+	return Run("-i", src,
 		"-f", "image2",
 		"-vf", "fps=fps=1/15",
-		"transferred/"+src+"/out-%03d.jpg",
+		dest+"/censor-%03d.jpg",
 	)
 }

@@ -30,7 +30,7 @@ func NewStreamerWithConfig(cfg *config.Configure, id string) *QueueInfo {
 	return &QueueInfo{
 		config:     cfg,
 		ID:         config.DefaultString(id, uuid.NewV1().String()),
-		FileSource: cfg.Media.Upload,
+		FileSource: cfg.Media.Download,
 		FileDest:   cfg.Media.Transfer,
 	}
 }
