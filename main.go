@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/godcong/aliyun-media-censor/config"
-	"github.com/godcong/aliyun-media-censor/oss"
 	"github.com/godcong/aliyun-media-censor/service"
 	"io"
 	"log"
