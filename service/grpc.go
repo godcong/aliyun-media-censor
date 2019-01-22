@@ -26,8 +26,6 @@ type GRPCServer struct {
 
 // Validate ...
 func (s *GRPCServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.CensorReply, error) {
-	var rd []*green.Result
-
 	qi := QueueInfo{
 		ObjectKey:    req.ObjectKey,
 		ID:           req.ID,
@@ -67,7 +65,15 @@ func (s *GRPCServer) Validate(ctx context.Context, req *proto.ValidateRequest) (
 		})
 	}
 
-	m, _ := jsoniter.MarshalToString(rd)
+	if err != nil {
+		return nil, err
+	}
+
+	m, err := jsoniter.MarshalToString(data)
+	if err != nil {
+		return nil, err
+	}
+
 	return Result(&proto.CensorReplyDetail{
 		ID:   req.ID,
 		Json: m,
