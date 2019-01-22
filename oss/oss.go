@@ -85,7 +85,7 @@ func (s *BucketServer) Server(idx ...int) *OSS {
 // Info ...
 func (s *BucketServer) Info() *DownloadInfo {
 	if s.info == nil {
-		s.info = NewDownloadInfo()
+		s.info = NewDownloadInfo(s.config)
 	}
 	return s.info
 }
