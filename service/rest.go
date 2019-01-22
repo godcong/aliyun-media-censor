@@ -3,9 +3,15 @@ package service
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/godcong/aliyun-media-censor/config"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
+	"strings"
 )
+
+// ContentTypeJSON ...
+const ContentTypeJSON = "application/json"
 
 // RestServer ...
 type RestServer struct {
@@ -21,8 +27,18 @@ type restBack struct {
 	Version string
 }
 
-func (b *restBack) Callback(*QueueResult) error {
-	panic("implement me")
+func (b *restBack) Callback(res *QueueResult) error {
+	back := filepath.Join(CheckPrefix(b.BackURL), b.Version, "censor/callback")
+	log.Println(back)
+
+	resp, err := http.Post(back, ContentTypeJSON, strings.NewReader(res.JSON()))
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	bytes, err := ioutil.ReadAll(resp.Body)
+	log.Println(string(bytes), err)
+	return err
 }
 
 // NewRestBack ...
@@ -70,4 +86,12 @@ func (s *RestServer) Stop() {
 	if err := s.server.Shutdown(nil); err != nil {
 		panic(err) // failure/timeout shutting down the server gracefully
 	}
+}
+
+// CheckPrefix ...
+func CheckPrefix(url string) string {
+	if strings.Index(url, "http") != 0 {
+		return "http://" + url
+	}
+	return url
 }
