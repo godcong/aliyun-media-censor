@@ -87,7 +87,7 @@ func validating(ch chan<- string, info *QueueInfo) {
 	}()
 	p := oss.NewProgress()
 	p.SetObjectKey(info.ObjectKey)
-
+	p.SetPath(info.ID)
 	server := oss.Server()
 	if !server.IsExist(p) {
 		err = fmt.Errorf("object [%s] is not exist", info.ObjectKey)

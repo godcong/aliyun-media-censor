@@ -25,6 +25,7 @@ type Callback struct {
 // Media ...
 type Media struct {
 	Upload      string `toml:"upload"`        //上传路径
+	Download    string `toml:"download"`      //下载路径
 	Transfer    string `toml:"transfer"`      //转换路径
 	M3U8        string `toml:"m3u8"`          //m3u8文件名
 	KeyURL      string `toml:"key_url"`       //default url
