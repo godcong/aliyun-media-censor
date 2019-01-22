@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/godcong/aliyun-media-censor/config"
+	"github.com/godcong/aliyun-media-censor/green"
 	"github.com/godcong/aliyun-media-censor/proto"
+	"github.com/json-iterator/go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"log"
@@ -23,16 +25,28 @@ type GRPCServer struct {
 
 // Validate ...
 func (s *GRPCServer) Validate(ctx context.Context, req *proto.ValidateRequest) (*proto.CensorReply, error) {
+	var rd []*green.Result
+
 	switch req.ValidateType {
 	case proto.CensorValidateType_JPG:
 
 	case proto.CensorValidateType_Frame:
+		qi := QueueInfo{
+			ObjectKey:     req.ObjectKey,
+			RequestKey:    req.ID,
+			ProcessMethod: req.ValidateType.String(),
+		}
+
+		Push(&qi)
+
 	case proto.CensorValidateType_Video:
 
 	}
+
+	m, _ := jsoniter.MarshalToString(rd)
 	return Result(&proto.CensorReplyDetail{
-		ID:   "",
-		Json: "",
+		ID:   req.ID,
+		Json: m,
 	}), nil
 }
 

@@ -2,11 +2,9 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"github.com/godcong/aliyun-media-censor/config"
-	"github.com/godcong/aliyun-media-censor/oss"
 	"github.com/godcong/aliyun-media-censor/service"
 	"io"
 	"log"
@@ -34,16 +32,16 @@ func main() {
 	done := make(chan bool, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	//ctx, cancel := context.WithCancel(context.Background())
 
-	oss.StartQueue(ctx, 5)
 	service.Start()
 	//start
 	go func() {
 		sig := <-sigs
 		//bm.Stop()
 		fmt.Println(sig, "exiting")
-		cancel()
+		//cancel()
+		service.Stop()
 		done <- true
 	}()
 	<-done

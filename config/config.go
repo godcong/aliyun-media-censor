@@ -6,6 +6,15 @@ import (
 	"os"
 )
 
+// Database ...
+type Database struct {
+	Type     string `toml:"type"`
+	Addr     string `toml:"addr"`
+	Port     string `toml:"port"`
+	Password string `toml:"password"`
+	Username string `toml:"username"`
+}
+
 // Callback ...
 type Callback struct {
 	Type     string `toml:"type"`
@@ -71,12 +80,13 @@ type OSS struct {
 
 // Configure ...
 type Configure struct {
-	Media Media `toml:"media"`
-	Queue Queue `toml:"queue"`
-	GRPC  GRPC  `toml:"grpc"`
-	REST  REST  `toml:"rest"`
-	IPFS  IPFS  `toml:"ipfs"`
-	OSS   []OSS `toml:"oss"`
+	Database Database `toml:"database"`
+	Media    Media    `toml:"media"`
+	Queue    Queue    `toml:"queue"`
+	GRPC     GRPC     `toml:"grpc"`
+	REST     REST     `toml:"rest"`
+	IPFS     IPFS     `toml:"ipfs"`
+	OSS      []OSS    `toml:"oss"`
 
 	Callback Callback `toml:"callback"`
 }
