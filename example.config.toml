@@ -1,0 +1,9 @@
+[media]
+    upload= "upload"
+    transfer= "censor"
+[grpc]
+    enable = true
+    port = ":7781"
+    path = "/tmp/node.sock"
+[rest]
+    enable = true

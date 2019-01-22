@@ -93,6 +93,11 @@ type Configure struct {
 
 var config *Configure
 
+// NullString ...
+func NullString(s string) bool {
+	return s == ""
+}
+
 // Initialize ...
 func Initialize(filePath ...string) error {
 	if filePath == nil {
@@ -101,19 +106,22 @@ func Initialize(filePath ...string) error {
 
 	cfg := LoadConfig(filePath[0])
 
+	cfg.Media.Upload = DefaultString(cfg.Media.Upload, "upload")
 	if !IsExists(cfg.Media.Upload) {
 		err := os.Mkdir(cfg.Media.Upload, os.ModePerm)
 		if err != nil {
 			return err
 		}
 	}
+
+	cfg.Media.Transfer = DefaultString(cfg.Media.Transfer, "transfer")
 	if !IsExists(cfg.Media.Transfer) {
 		err := os.Mkdir(cfg.Media.Transfer, os.ModePerm)
 		if err != nil {
 			return err
 		}
 	}
-
+	cfg.Media.KeyDest = DefaultString(cfg.Media.KeyDest, "keydest")
 	if !IsExists(cfg.Media.KeyDest) {
 		err := os.Mkdir(cfg.Media.KeyDest, os.ModePerm)
 		if err != nil {

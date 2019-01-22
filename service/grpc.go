@@ -97,9 +97,10 @@ func Result(detail *proto.CensorReplyDetail) *proto.CensorReply {
 // NewGRPCServer ...
 func NewGRPCServer(cfg *config.Configure) *GRPCServer {
 	return &GRPCServer{
-		Type: config.DefaultString(cfg.GRPC.Type, Type),
-		Port: config.DefaultString(cfg.GRPC.Port, ":7786"),
-		Path: config.DefaultString(cfg.GRPC.Path, "/tmp/censor.sock"),
+		config: cfg,
+		Type:   config.DefaultString(cfg.GRPC.Type, Type),
+		Port:   config.DefaultString(cfg.GRPC.Port, ":7786"),
+		Path:   config.DefaultString(cfg.GRPC.Path, "/tmp/censor.sock"),
 	}
 }
 
