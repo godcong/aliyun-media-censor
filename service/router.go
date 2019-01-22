@@ -168,13 +168,13 @@ func Router(eng *gin.Engine) {
 	})
 	g0.POST("validate", ValidatePOST(verV0))
 
-	g0.POST("validate/frame", func(ctx *gin.Context) {
-		failed(ctx, "please use /validate")
-	})
-
-	g0.POST("validate/pic", func(ctx *gin.Context) {
-		failed(ctx, "please use /validate")
-	})
+	//g0.POST("validate/frame", func(ctx *gin.Context) {
+	//	failed(ctx, "please use /validate")
+	//})
+	//
+	//g0.POST("validate/pic", func(ctx *gin.Context) {
+	//	failed(ctx, "please use /validate")
+	//})
 
 	g0.GET("status/pic", func(ctx *gin.Context) {
 		id := ctx.QueryArray("id")

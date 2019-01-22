@@ -1,6 +1,10 @@
 package service
 
-import "github.com/godcong/aliyun-media-censor/config"
+import (
+	"github.com/godcong/aliyun-media-censor/config"
+	"github.com/godcong/aliyun-media-censor/oss"
+	"log"
+)
 
 // service ...
 type service struct {
@@ -21,8 +25,13 @@ func Start() {
 		queue: NewQueueServer(cfg),
 	}
 
+	log.Println("run main")
+	oss.InitOSS(config.Config())
+
 	server.rest.Start()
 	server.grpc.Start()
+
+	server.queue.Processes = 5
 	server.queue.Start()
 
 }
