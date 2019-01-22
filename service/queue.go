@@ -129,17 +129,20 @@ func validating(ch chan<- string, info *QueueInfo) {
 		}
 	}
 
-	toString, err := jsoniter.MarshalToString(rds)
-	log.Println(toString, err)
-
-	info.Callback
-
+	err = NewBack().Callback(info.ID, &ResultDataList{
+		ID:     info.ID,
+		Detail: rds,
+	})
+	return
 }
 
-type ResultDataList []*green.ResultData
+type ResultDataList struct {
+	ID     string              `json:"id"`
+	Detail []*green.ResultData `json:"detail"`
+}
 
 func (list *ResultDataList) JSON() string {
-	s, _ := jsoniter.MarshalToString(r)
+	s, _ := jsoniter.MarshalToString(list)
 	return s
 }
 
