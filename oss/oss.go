@@ -167,7 +167,7 @@ func (p *progress) SetObjectKey(objectKey string) {
 	p.objectKey = objectKey
 }
 
-// 定义进度变更事件处理函数。
+//ProgressChanged 定义进度变更事件处理函数。
 func (p *progress) ProgressChanged(event *oss.ProgressEvent) {
 	switch event.EventType {
 	case oss.TransferStartedEvent:
