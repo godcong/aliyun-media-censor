@@ -13,6 +13,7 @@ import (
 	"log"
 	"net"
 	"syscall"
+	"time"
 )
 
 // GRPCServer ...
@@ -86,8 +87,17 @@ type grpcBack struct {
 	BackAddr string
 }
 
-func (b *grpcBack) Callback(*QueueResult) error {
-	panic("implement me")
+func (b *grpcBack) Callback(id string, res *ResultDataList) error {
+	grpc := NewManagerGRPC(config.Config())
+	client := ManagerClient(grpc)
+	timeout, _ := context.WithTimeout(context.Background(), time.Second*5)
+
+	reply, err := client.CensorBack(timeout, &proto.ManagerCensorRequest{
+		ID:     id,
+		Detail: res.JSON(),
+	})
+	log.Println(reply.Detail)
+	return err
 }
 
 // Result ...

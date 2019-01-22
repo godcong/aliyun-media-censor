@@ -10,7 +10,7 @@ import (
 
 // QueueCallback ...
 type QueueCallback interface {
-	Callback(*QueueResult) error
+	Callback(string, *ResultDataList) error
 }
 
 // QueueInfo ...

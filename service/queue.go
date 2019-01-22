@@ -8,7 +8,6 @@ import (
 	"github.com/godcong/aliyun-media-censor/ffmpeg"
 	"github.com/godcong/aliyun-media-censor/green"
 	"github.com/godcong/aliyun-media-censor/oss"
-	"github.com/godcong/aliyun-media-censor/proto"
 	"github.com/godcong/aliyun-media-censor/util"
 	"github.com/json-iterator/go"
 	"log"
@@ -105,7 +104,6 @@ func validating(ch chan<- string, info *QueueInfo) {
 	}
 
 	fileLen := len(files)
-
 	steps := int(math.Ceil(float64(fileLen) / 64))
 
 	rd := make(chan *green.ResultData, steps)
@@ -131,36 +129,16 @@ func validating(ch chan<- string, info *QueueInfo) {
 		}
 	}
 
-	grpc := NewManagerGRPC(config.Config())
-	client := ManagerClient(grpc)
-	timeout, _ := context.WithTimeout(context.Background(), time.Second*5)
-
 	toString, err := jsoniter.MarshalToString(rds)
 	log.Println(toString, err)
 
-	reply, err := client.CensorBack(timeout, &proto.ManagerCensorRequest{
-		ID:     info.ID,
-		Detail: toString,
-	})
-	log.Println(reply.Detail)
+	info.Callback
+
 }
 
-// QueueResult ...
-type QueueResult struct {
-	ID     string `mapstructure:"id"`
-	FSInfo struct {
-		Hash string `mapstructure:"hash"`
-		Name string `mapstructure:"name"`
-		Size string `mapstructure:"size"`
-	} `mapstructure:"fs_info"`
-	NSInfo struct {
-		Name  string `mapstructure:"name"`
-		Value string `mapstructure:"value"`
-	} `mapstructure:"ns_info"`
-}
+type ResultDataList []*green.ResultData
 
-// JSON ...
-func (r *QueueResult) JSON() string {
+func (list *ResultDataList) JSON() string {
 	s, _ := jsoniter.MarshalToString(r)
 	return s
 }

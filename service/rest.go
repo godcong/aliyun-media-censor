@@ -27,7 +27,7 @@ type restBack struct {
 	Version string
 }
 
-func (b *restBack) Callback(res *QueueResult) error {
+func (b *restBack) Callback(id string, res *ResultDataList) error {
 	back := filepath.Join(CheckPrefix(b.BackURL), b.Version, "censor/callback")
 	log.Println(back)
 

@@ -20,6 +20,7 @@ type Callback struct {
 	Type     string `toml:"type"`
 	BackType string `toml:"back_type"`
 	BackAddr string `toml:"back_addr"`
+	Version  string `toml:"version"`
 }
 
 // Media ...
