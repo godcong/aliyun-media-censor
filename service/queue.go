@@ -8,6 +8,7 @@ import (
 	"github.com/godcong/aliyun-media-censor/ffmpeg"
 	"github.com/godcong/aliyun-media-censor/green"
 	"github.com/godcong/aliyun-media-censor/oss"
+	"github.com/godcong/aliyun-media-censor/proto"
 	"github.com/godcong/aliyun-media-censor/util"
 	"github.com/json-iterator/go"
 	"log"
@@ -130,8 +131,18 @@ func validating(ch chan<- string, info *QueueInfo) {
 		}
 	}
 
-	log.Println(rds)
+	grpc := NewManagerGRPC(config.Config())
+	client := ManagerClient(grpc)
+	timeout, _ := context.WithTimeout(context.Background(), time.Second*5)
 
+	toString, err := jsoniter.MarshalToString(rds)
+	log.Println(toString, err)
+
+	reply, err := client.CensorBack(timeout, &proto.ManagerCensorRequest{
+		ID:     info.ID,
+		Detail: toString,
+	})
+	log.Println(reply.Detail)
 }
 
 // QueueResult ...

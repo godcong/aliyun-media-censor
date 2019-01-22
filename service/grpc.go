@@ -141,3 +141,45 @@ func (s *GRPCServer) Start() {
 func (s *GRPCServer) Stop() {
 	s.server.Stop()
 }
+
+// GRPCClient ...
+type GRPCClient struct {
+	config *config.Configure
+	Type   string
+	Port   string
+	Addr   string
+}
+
+// Conn ...
+func (c *GRPCClient) Conn() (*grpc.ClientConn, error) {
+	var conn *grpc.ClientConn
+	var err error
+
+	if c.Type == "unix" {
+		conn, err = grpc.Dial("passthrough:///unix://"+c.Addr, grpc.WithInsecure())
+	} else {
+		conn, err = grpc.Dial(c.Addr, grpc.WithInsecure())
+	}
+
+	return conn, err
+}
+
+// ManagerClient ...
+func ManagerClient(g *GRPCClient) proto.ManagerServiceClient {
+	clientConn, err := g.Conn()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	return proto.NewManagerServiceClient(clientConn)
+}
+
+// NewManagerGRPC ...
+func NewManagerGRPC(cfg *config.Configure) *GRPCClient {
+	return &GRPCClient{
+		config: cfg,
+		Type:   config.DefaultString("unix", Type),
+		Port:   config.DefaultString("", ":7781"),
+		Addr:   config.DefaultString("", "/tmp/manager.sock"),
+	}
+}
